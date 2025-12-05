@@ -1,0 +1,34 @@
+{
+	"name": "@whatsnew/api",
+	"version": "0.1.0",
+	"private": true,
+	"description": "HTTP API for WNF changelog intelligence (Bun/Hono)",
+	"type": "module",
+	"scripts": {
+		"dev": "bun run --watch src/index.ts",
+		"build": "bun build src/index.ts --outdir dist --target bun",
+		"start": "bun run dist/index.js",
+		"test": "vitest --run",
+		"test:coverage": "vitest --run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"license": "MIT",
+	"author": "Gustavo Valverde",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gustavovalverde/wnf",
+		"directory": "packages/api"
+	},
+	"dependencies": {
+		"@whatsnew/core": "workspace:*",
+		"hono": "^4.10.3",
+		"dotenv": "^17.2.3",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@types/bun": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:",
+		"vite": "catalog:"
+	}
+}

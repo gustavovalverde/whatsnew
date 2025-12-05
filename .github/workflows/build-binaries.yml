@@ -1,0 +1,116 @@
+name: Build Binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref (tag or branch) to build from"
+        required: false
+        default: ""
+
+concurrency:
+  group: build-binaries-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: bun-linux-x64
+            runner: ubuntu-24.04
+            artifact: whatsnew-linux-x64
+          - target: bun-linux-arm64
+            runner: ubuntu-24.04-arm
+            artifact: whatsnew-linux-arm64
+          - target: bun-darwin-x64
+            runner: macos-13
+            artifact: whatsnew-darwin-x64
+          - target: bun-darwin-arm64
+            runner: macos-14
+            artifact: whatsnew-darwin-arm64
+          - target: bun-windows-x64
+            runner: windows-latest
+            artifact: whatsnew-windows-x64.exe
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref || github.ref }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: "1.3.1"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages
+        run: bun run build
+
+      - name: Build binary
+        run: bun build --compile --target=${{ matrix.target }} packages/cli/bin/whatsnew.ts --outfile ${{ matrix.artifact }}
+
+      - name: Test binary (Unix)
+        if: runner.os != 'Windows'
+        run: ./${{ matrix.artifact }} --help
+
+      - name: Test binary (Windows)
+        if: runner.os == 'Windows'
+        run: .\${{ matrix.artifact }} --help
+
+      - name: Generate checksum (Unix)
+        if: runner.os != 'Windows'
+        run: sha256sum ${{ matrix.artifact }} > ${{ matrix.artifact }}.sha256
+
+      - name: Generate checksum (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash -Algorithm SHA256 ${{ matrix.artifact }}).Hash.ToLower()
+          "$hash  ${{ matrix.artifact }}" | Out-File -Encoding utf8 ${{ matrix.artifact }}.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            ${{ matrix.artifact }}
+            ${{ matrix.artifact }}.sha256
+          if-no-files-found: error
+
+  publish:
+    name: Publish to Release
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'release'
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          path: binaries
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -la binaries/
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        with:
+          files: binaries/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

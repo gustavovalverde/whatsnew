@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+.wrangler/
+
+# Environment
+.env
+.env.local
+.env.production
+.dev.vars
+
+# Database
+*.db
+*.db-*
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temp
+tmp/
+temp/
+*.tmp
+*.bun-build
+
+# TypeScript
+*.tsbuildinfo
+# Compiled output (we commit source .ts files only)
+packages/**/*.d.ts
+packages/**/*.d.ts.map
+packages/**/*.js
+packages/**/*.js.map
+!packages/**/src/**/*.js
+
+# Scripts compiled output
+scripts/**/*.d.ts
+scripts/**/*.d.ts.map
+scripts/**/*.js
+scripts/**/*.js.map
+
+# Test outputs (for manual evaluation)
+.output/
+scripts/e2e/results/
+
+# Internal documentation (business strategy, competitive analysis)
+.github/internal/

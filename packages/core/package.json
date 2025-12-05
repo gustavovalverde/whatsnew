@@ -1,0 +1,57 @@
+{
+	"name": "@whatsnew/core",
+	"version": "0.1.0",
+	"description": "Core business logic for WNF changelog intelligence - ReleaseService, GitHub client, and data aggregation",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"license": "MIT",
+	"author": "Gustavo Valverde",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gustavovalverde/wnf",
+		"directory": "packages/core"
+	},
+	"homepage": "https://github.com/gustavovalverde/wnf#readme",
+	"bugs": {
+		"url": "https://github.com/gustavovalverde/wnf/issues"
+	},
+	"keywords": [
+		"changelog",
+		"releases",
+		"whatsnew",
+		"wnf",
+		"github",
+		"monorepo"
+	],
+	"dependencies": {
+		"@ai-sdk/anthropic": "^2.0.53",
+		"@ai-sdk/openai": "^2.0.77",
+		"@whatsnew/parsers": "workspace:*",
+		"@whatsnew/types": "workspace:*",
+		"@whatsnew/utils": "workspace:*",
+		"ai": "^5.0.106",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

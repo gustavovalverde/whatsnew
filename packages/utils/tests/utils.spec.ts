@@ -1,0 +1,220 @@
+import { describe, expect, it } from "vitest";
+import {
+	escapeRegex,
+	extractBreakingDescription,
+	extractGitHubRefs,
+	extractGitLabRefs,
+	extractPackageName,
+	extractRefs,
+	extractVersion,
+	hasBreakingMarker,
+	isBreakingChange,
+	isMajorSection,
+	isMonorepoTag,
+	normalizeForComparison,
+	normalizeLineEndings,
+	normalizeWhitespace,
+	parseVersion,
+} from "../src/index.js";
+
+describe("escapeRegex", () => {
+	it("escapes special regex characters", () => {
+		expect(escapeRegex("hello (world)")).toBe("hello \\(world\\)");
+		expect(escapeRegex("a*b+c?")).toBe("a\\*b\\+c\\?");
+		expect(escapeRegex("[test]")).toBe("\\[test\\]");
+	});
+
+	it("leaves normal text unchanged", () => {
+		expect(escapeRegex("hello world")).toBe("hello world");
+	});
+});
+
+describe("normalizeLineEndings", () => {
+	it("converts CRLF to LF", () => {
+		expect(normalizeLineEndings("line1\r\nline2\r\n")).toBe("line1\nline2\n");
+	});
+
+	it("leaves LF unchanged", () => {
+		expect(normalizeLineEndings("line1\nline2\n")).toBe("line1\nline2\n");
+	});
+});
+
+describe("normalizeWhitespace", () => {
+	it("collapses multiple spaces", () => {
+		expect(normalizeWhitespace("hello    world")).toBe("hello world");
+	});
+
+	it("trims leading and trailing whitespace", () => {
+		expect(normalizeWhitespace("  hello  ")).toBe("hello");
+	});
+});
+
+describe("normalizeForComparison", () => {
+	it("normalizes text for comparison", () => {
+		expect(normalizeForComparison("Fix: Bug in auth!")).toBe("fix bug in auth");
+	});
+
+	it("respects maxLength parameter", () => {
+		expect(normalizeForComparison("this is a long text", 10)).toBe(
+			"this is a ",
+		);
+	});
+});
+
+describe("extractGitHubRefs", () => {
+	it("extracts #123 format refs", () => {
+		expect(extractGitHubRefs("Fixed #123 and #456")).toEqual(["123", "456"]);
+	});
+
+	it("extracts [#123](url) format refs", () => {
+		expect(extractGitHubRefs("Fixed [#123](http://example.com)")).toEqual([
+			"123",
+		]);
+	});
+
+	it("extracts GH-123 format refs", () => {
+		expect(extractGitHubRefs("Fixed GH-123")).toEqual(["123"]);
+	});
+
+	it("avoids duplicates", () => {
+		expect(extractGitHubRefs("#123 and [#123](url)")).toEqual(["123"]);
+	});
+});
+
+describe("extractGitLabRefs", () => {
+	it("extracts !123 MR format", () => {
+		expect(extractGitLabRefs("Fixed in !123")).toEqual(["123"]);
+	});
+
+	it("extracts [issue 123] format", () => {
+		expect(extractGitLabRefs("See [issue 456]")).toEqual(["456"]);
+	});
+});
+
+describe("extractRefs", () => {
+	it("defaults to GitHub-style extraction", () => {
+		expect(extractRefs("Fixed #123")).toEqual(["123"]);
+	});
+});
+
+describe("extractVersion", () => {
+	it("strips v prefix", () => {
+		expect(extractVersion("v1.2.3")).toBe("1.2.3");
+	});
+
+	it("strips scoped package prefix", () => {
+		expect(extractVersion("@scope/pkg@1.2.3")).toBe("1.2.3");
+	});
+
+	it("strips unscoped package prefix", () => {
+		expect(extractVersion("pkg@1.2.3")).toBe("1.2.3");
+	});
+
+	it("leaves version unchanged if no prefix", () => {
+		expect(extractVersion("1.2.3")).toBe("1.2.3");
+	});
+});
+
+describe("extractPackageName", () => {
+	it("extracts scoped package name", () => {
+		expect(extractPackageName("@scope/pkg@1.2.3")).toBe("@scope/pkg");
+	});
+
+	it("extracts unscoped package name", () => {
+		expect(extractPackageName("pkg@1.2.3")).toBe("pkg");
+	});
+
+	it("returns null for simple version tags", () => {
+		expect(extractPackageName("v1.2.3")).toBeNull();
+		expect(extractPackageName("1.2.3")).toBeNull();
+	});
+});
+
+describe("isMonorepoTag", () => {
+	it("returns true for monorepo tags", () => {
+		expect(isMonorepoTag("@whatsnew/core@1.0.0")).toBe(true);
+		expect(isMonorepoTag("core@1.0.0")).toBe(true);
+	});
+
+	it("returns false for simple tags", () => {
+		expect(isMonorepoTag("v1.0.0")).toBe(false);
+		expect(isMonorepoTag("1.0.0")).toBe(false);
+	});
+});
+
+describe("parseVersion", () => {
+	it("parses standard semver", () => {
+		expect(parseVersion("1.2.3")).toEqual({ major: 1, minor: 2, patch: 3 });
+	});
+
+	it("parses semver with prerelease", () => {
+		expect(parseVersion("1.2.3-beta.1")).toEqual({
+			major: 1,
+			minor: 2,
+			patch: 3,
+			prerelease: "beta.1",
+		});
+	});
+
+	it("returns null for invalid version", () => {
+		expect(parseVersion("invalid")).toBeNull();
+		expect(parseVersion("1.2")).toBeNull();
+	});
+});
+
+describe("isBreakingChange", () => {
+	it("detects conventional commit breaking marker", () => {
+		expect(isBreakingChange("feat!: new feature")).toBe(true);
+		expect(isBreakingChange("fix(api)!: change")).toBe(true);
+	});
+
+	it("detects BREAKING CHANGE footer", () => {
+		expect(isBreakingChange("text\nBREAKING CHANGE: new api")).toBe(true);
+		expect(isBreakingChange("BREAKING-CHANGE: changed")).toBe(true);
+	});
+
+	it("detects breaking change keyword", () => {
+		expect(isBreakingChange("This is a breaking change")).toBe(true);
+	});
+
+	it("returns false for non-breaking changes", () => {
+		expect(isBreakingChange("fix: minor bug")).toBe(false);
+		expect(isBreakingChange("feat: new feature")).toBe(false);
+	});
+});
+
+describe("hasBreakingMarker", () => {
+	it("detects ! marker", () => {
+		expect(hasBreakingMarker("feat!: change")).toBe(true);
+		expect(hasBreakingMarker("feat(scope)!: change")).toBe(true);
+	});
+
+	it("returns false without marker", () => {
+		expect(hasBreakingMarker("feat: change")).toBe(false);
+	});
+});
+
+describe("extractBreakingDescription", () => {
+	it("extracts BREAKING CHANGE description", () => {
+		expect(
+			extractBreakingDescription("text\nBREAKING CHANGE: The API changed"),
+		).toBe("The API changed");
+	});
+
+	it("returns null if not found", () => {
+		expect(extractBreakingDescription("normal text")).toBeNull();
+	});
+});
+
+describe("isMajorSection", () => {
+	it("returns true for major", () => {
+		expect(isMajorSection("major")).toBe(true);
+		expect(isMajorSection("Major")).toBe(true);
+		expect(isMajorSection("MAJOR")).toBe(true);
+	});
+
+	it("returns false for other sections", () => {
+		expect(isMajorSection("minor")).toBe(false);
+		expect(isMajorSection("patch")).toBe(false);
+	});
+});

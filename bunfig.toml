@@ -1,0 +1,13 @@
+workspaces = ["packages/*", "apps/*"]
+
+[install]
+linker = "isolated"
+publicHoistPattern = ["@types*", "*eslint*"]
+hoistPattern = ["@types*"]
+linkWorkspacePackages = true
+
+[install.security]
+scanner = "bun-osv-scanner"
+
+[run]
+env = { BUN_VERSION = "1.3.1" }

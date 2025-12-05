@@ -1,0 +1,44 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"moduleResolution": "bundler",
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+		"composite": true,
+		"incremental": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"allowSyntheticDefaultImports": true,
+		"baseUrl": ".",
+		"paths": {
+			"@whatsnew/types": ["packages/types/src"],
+			"@whatsnew/types/*": ["packages/types/src/*"],
+			"@whatsnew/utils": ["packages/utils/src"],
+			"@whatsnew/utils/*": ["packages/utils/src/*"],
+			"@whatsnew/parsers": ["packages/parsers/src"],
+			"@whatsnew/parsers/*": ["packages/parsers/src/*"],
+			"@whatsnew/core": ["packages/core/src"],
+			"@whatsnew/core/*": ["packages/core/src/*"]
+		}
+	},
+	"exclude": ["node_modules", "dist", "**/tests/**", "scripts/**"],
+	"references": [
+		{ "path": "packages/types" },
+		{ "path": "packages/utils" },
+		{ "path": "packages/parsers" },
+		{ "path": "packages/core" },
+		{ "path": "packages/cli" },
+		{ "path": "packages/api" }
+	]
+}

@@ -1,0 +1,37 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"buildCommand": "cd ../.. && bun install && bun run --filter @whatsnew/core build && bun run --filter @whatsnew/parsers build && bun run --filter @whatsnew/types build",
+	"installCommand": "bun install",
+	"framework": null,
+	"functions": {
+		"src/index.ts": {
+			"runtime": "nodejs20.x",
+			"maxDuration": 30
+		}
+	},
+	"rewrites": [
+		{
+			"source": "/(.*)",
+			"destination": "/src/index.ts"
+		}
+	],
+	"headers": [
+		{
+			"source": "/(.*)",
+			"headers": [
+				{
+					"key": "Access-Control-Allow-Origin",
+					"value": "*"
+				},
+				{
+					"key": "Access-Control-Allow-Methods",
+					"value": "GET, POST, OPTIONS"
+				},
+				{
+					"key": "Access-Control-Allow-Headers",
+					"value": "Content-Type, Authorization"
+				}
+			]
+		}
+	]
+}

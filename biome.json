@@ -1,0 +1,154 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.0/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**/src/**/*",
+			"**/tests/**/*",
+			"**/*.config.ts",
+			"**/*.config.js",
+			"**/*.md",
+			"packages/**/package.json",
+			"package.json",
+			"biome.json",
+			"tsconfig*.json"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": {
+				"noUnusedImports": "error",
+				"noUnusedVariables": "error",
+				"noUnusedPrivateClassMembers": "error"
+			},
+			"suspicious": {
+				"noConsole": "warn",
+				"noDebugger": "error",
+				"noExplicitAny": "warn",
+				"noEmptyBlockStatements": "error"
+			},
+			"style": {
+				"useConst": "error",
+				"useTemplate": "error",
+				"noParameterAssign": "error",
+				"useExportType": "error",
+				"useImportType": "error",
+				"noNamespace": "error",
+				"useNodejsImportProtocol": "error",
+				"noDefaultExport": "off",
+				"useExponentiationOperator": "error",
+				"noNegationElse": "error",
+				"useShorthandAssign": "error"
+			},
+			"complexity": {
+				"noExcessiveCognitiveComplexity": {
+					"level": "warn",
+					"options": {
+						"maxAllowedComplexity": 20
+					}
+				},
+				"noForEach": "warn",
+				"useFlatMap": "error",
+				"useOptionalChain": "error"
+			},
+			"performance": {
+				"noAccumulatingSpread": "error",
+				"noBarrelFile": "off",
+				"noReExportAll": "off",
+				"noDelete": "warn"
+			},
+			"security": {
+				"noGlobalEval": "error"
+			},
+			"nursery": {
+				"noFloatingPromises": "error",
+				"noShadow": "warn"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": [
+				"**/tests/**",
+				"**/*.test.ts",
+				"**/*.spec.ts",
+				"**/__tests__/**",
+				"**/__mocks__/**"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off",
+						"noConsole": "off"
+					},
+					"complexity": {
+						"noExcessiveCognitiveComplexity": "off"
+					},
+					"performance": {
+						"noAccumulatingSpread": "off"
+					},
+					"nursery": {
+						"noFloatingPromises": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/*.config.ts", "**/*.config.js", "**/vitest.config.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noDefaultExport": "off"
+					},
+					"nursery": {
+						"noFloatingPromises": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/cli/src/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/api/src/**", "packages/core/src/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	]
+}

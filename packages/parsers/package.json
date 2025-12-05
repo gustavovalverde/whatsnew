@@ -1,0 +1,56 @@
+{
+	"name": "@whatsnew/parsers",
+	"version": "0.1.0",
+	"description": "Multi-format changelog parsers for Keep-a-Changelog, Conventional Commits, Changesets, and more",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"test": "vitest --run",
+		"test:coverage": "vitest --run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"license": "MIT",
+	"author": "Gustavo Valverde",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gustavovalverde/wnf",
+		"directory": "packages/parsers"
+	},
+	"homepage": "https://github.com/gustavovalverde/wnf#readme",
+	"bugs": {
+		"url": "https://github.com/gustavovalverde/wnf/issues"
+	},
+	"keywords": [
+		"changelog",
+		"releases",
+		"whatsnew",
+		"wnf",
+		"parser",
+		"keep-a-changelog",
+		"conventional-commits",
+		"changesets"
+	],
+	"dependencies": {
+		"@whatsnew/types": "workspace:*",
+		"@whatsnew/utils": "workspace:*",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:",
+		"vite": "catalog:"
+	}
+}

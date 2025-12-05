@@ -1,0 +1,60 @@
+{
+	"name": "@whatsnew/cli",
+	"version": "0.1.0",
+	"description": "CLI tool to see what changed in your dependencies - whatsnew command",
+	"type": "module",
+	"bin": {
+		"whatsnew": "./bin/whatsnew.js"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"bin"
+	],
+	"scripts": {
+		"build": "tsc && bun build bin/whatsnew.ts --outfile bin/whatsnew.js --target node",
+		"build:bin": "bun build bin/whatsnew.ts --outfile bin/whatsnew.js --target node",
+		"dev": "tsc --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage"
+	},
+	"license": "MIT",
+	"author": "Gustavo Valverde",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gustavovalverde/wnf",
+		"directory": "packages/cli"
+	},
+	"homepage": "https://github.com/gustavovalverde/wnf#readme",
+	"bugs": {
+		"url": "https://github.com/gustavovalverde/wnf/issues"
+	},
+	"keywords": [
+		"changelog",
+		"releases",
+		"whatsnew",
+		"wnf",
+		"cli",
+		"dependencies"
+	],
+	"dependencies": {
+		"@whatsnew/core": "workspace:*",
+		"@whatsnew/types": "workspace:*",
+		"date-fns": "^4.1.0"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"@vitest/coverage-v8": "^4.0.15",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

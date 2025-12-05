@@ -1,0 +1,398 @@
+{
+	"$schema": "./test-repositories.schema.json",
+	"description": "Test repositories for WNF parser integration testing",
+	"lastUpdated": "2025-12-03",
+	"repositories": [
+		{
+			"repo": "facebook/react",
+			"stars": "240k+",
+			"expectedFormat": "github-auto",
+			"category": "frontend",
+			"notes": "Major framework with structured releases"
+		},
+		{
+			"repo": "vercel/next.js",
+			"stars": "130k+",
+			"expectedFormat": "github-auto",
+			"category": "frontend",
+			"notes": "Framework with detailed changelogs"
+		},
+		{
+			"repo": "vercel/ai",
+			"stars": "15k+",
+			"expectedFormat": "changesets",
+			"category": "ai",
+			"isMonorepo": true,
+			"packages": ["ai", "@ai-sdk/openai", "@ai-sdk/anthropic"]
+		},
+		{
+			"repo": "expressjs/express",
+			"stars": "65k+",
+			"expectedFormat": "github-auto",
+			"category": "backend"
+		},
+		{
+			"repo": "vuejs/vue",
+			"stars": "210k+",
+			"expectedFormat": "github-auto",
+			"category": "frontend"
+		},
+		{
+			"repo": "sveltejs/svelte",
+			"stars": "82k+",
+			"expectedFormat": "github-auto",
+			"category": "frontend"
+		},
+		{
+			"repo": "angular/angular",
+			"stars": "98k+",
+			"expectedFormat": "conventional-commits",
+			"category": "frontend"
+		},
+		{
+			"repo": "microsoft/TypeScript",
+			"stars": "105k+",
+			"expectedFormat": "github-auto",
+			"category": "language"
+		},
+		{
+			"repo": "denoland/deno",
+			"stars": "105k+",
+			"expectedFormat": "github-auto",
+			"category": "runtime"
+		},
+		{
+			"repo": "oven-sh/bun",
+			"stars": "78k+",
+			"expectedFormat": "github-auto",
+			"category": "runtime"
+		},
+		{
+			"repo": "nodejs/node",
+			"stars": "110k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "runtime"
+		},
+		{
+			"repo": "rust-lang/rust",
+			"stars": "102k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "language"
+		},
+		{
+			"repo": "python/cpython",
+			"stars": "66k+",
+			"expectedFormat": "generic",
+			"category": "language"
+		},
+		{
+			"repo": "golang/go",
+			"stars": "128k+",
+			"expectedFormat": "generic",
+			"category": "language"
+		},
+		{
+			"repo": "torvalds/linux",
+			"stars": "207k+",
+			"expectedFormat": "generic",
+			"category": "os"
+		},
+		{
+			"repo": "tailwindlabs/tailwindcss",
+			"stars": "86k+",
+			"expectedFormat": "github-auto",
+			"category": "css"
+		},
+		{
+			"repo": "shadcn-ui/ui",
+			"stars": "82k+",
+			"expectedFormat": "github-auto",
+			"category": "ui"
+		},
+		{
+			"repo": "storybookjs/storybook",
+			"stars": "86k+",
+			"expectedFormat": "changesets",
+			"category": "dev-tools",
+			"isMonorepo": true
+		},
+		{
+			"repo": "prisma/prisma",
+			"stars": "42k+",
+			"expectedFormat": "github-auto",
+			"category": "database"
+		},
+		{
+			"repo": "drizzle-team/drizzle-orm",
+			"stars": "28k+",
+			"expectedFormat": "github-auto",
+			"category": "database"
+		},
+		{
+			"repo": "withastro/starlight",
+			"stars": "5k+",
+			"expectedFormat": "changesets",
+			"category": "frontend",
+			"isMonorepo": true,
+			"notes": "Astro documentation framework, uses changesets"
+		},
+		{
+			"repo": "trpc/trpc",
+			"stars": "36k+",
+			"expectedFormat": "changesets",
+			"category": "api",
+			"isMonorepo": true
+		},
+		{
+			"repo": "tanstack/query",
+			"stars": "45k+",
+			"expectedFormat": "github-auto",
+			"category": "data-fetching"
+		},
+		{
+			"repo": "pmndrs/zustand",
+			"stars": "52k+",
+			"expectedFormat": "github-auto",
+			"category": "state"
+		},
+		{
+			"repo": "jaredpalmer/formik",
+			"stars": "34k+",
+			"expectedFormat": "github-auto",
+			"category": "forms"
+		},
+		{
+			"repo": "colinhacks/zod",
+			"stars": "36k+",
+			"expectedFormat": "github-auto",
+			"category": "validation"
+		},
+		{
+			"repo": "tauri-apps/tauri",
+			"stars": "99k+",
+			"expectedFormat": "conventional-commits",
+			"category": "desktop"
+		},
+		{
+			"repo": "electron/electron",
+			"stars": "116k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "desktop"
+		},
+		{
+			"repo": "docker/compose",
+			"stars": "35k+",
+			"expectedFormat": "github-auto",
+			"category": "devops"
+		},
+		{
+			"repo": "kubernetes/kubernetes",
+			"stars": "115k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "devops"
+		},
+		{
+			"repo": "grafana/grafana",
+			"stars": "68k+",
+			"expectedFormat": "github-auto",
+			"category": "monitoring"
+		},
+		{
+			"repo": "prometheus/prometheus",
+			"stars": "58k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "monitoring"
+		},
+		{
+			"repo": "traefik/traefik",
+			"stars": "53k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "devops"
+		},
+		{
+			"repo": "minio/minio",
+			"stars": "50k+",
+			"expectedFormat": "github-auto",
+			"category": "storage"
+		},
+		{
+			"repo": "huggingface/transformers",
+			"stars": "152k+",
+			"expectedFormat": "github-auto",
+			"category": "ai"
+		},
+		{
+			"repo": "langchain-ai/langchain",
+			"stars": "105k+",
+			"expectedFormat": "github-auto",
+			"category": "ai"
+		},
+		{
+			"repo": "openai/openai-python",
+			"stars": "25k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "ai"
+		},
+		{
+			"repo": "anthropics/anthropic-sdk-python",
+			"stars": "3k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "ai"
+		},
+		{
+			"repo": "mudler/LocalAI",
+			"stars": "30k+",
+			"expectedFormat": "github-auto",
+			"category": "ai"
+		},
+		{
+			"repo": "ollama/ollama",
+			"stars": "120k+",
+			"expectedFormat": "github-auto",
+			"category": "ai"
+		},
+		{
+			"repo": "rustdesk/rustdesk",
+			"stars": "103k+",
+			"expectedFormat": "github-auto",
+			"category": "desktop"
+		},
+		{
+			"repo": "zed-industries/zed",
+			"stars": "55k+",
+			"expectedFormat": "github-auto",
+			"category": "editor"
+		},
+		{
+			"repo": "neovim/neovim",
+			"stars": "88k+",
+			"expectedFormat": "github-auto",
+			"category": "editor"
+		},
+		{
+			"repo": "helix-editor/helix",
+			"stars": "36k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "editor"
+		},
+		{
+			"repo": "astral-sh/uv",
+			"stars": "74k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "package-manager"
+		},
+		{
+			"repo": "astral-sh/ruff",
+			"stars": "40k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "linter"
+		},
+		{
+			"repo": "biomejs/biome",
+			"stars": "18k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "linter"
+		},
+		{
+			"repo": "eslint/eslint",
+			"stars": "26k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "linter"
+		},
+		{
+			"repo": "prettier/prettier",
+			"stars": "50k+",
+			"expectedFormat": "github-auto",
+			"category": "formatter"
+		},
+		{
+			"repo": "vitest-dev/vitest",
+			"stars": "14k+",
+			"expectedFormat": "github-auto",
+			"category": "testing"
+		},
+		{
+			"repo": "jestjs/jest",
+			"stars": "45k+",
+			"expectedFormat": "github-auto",
+			"category": "testing"
+		},
+		{
+			"repo": "microsoft/playwright",
+			"stars": "72k+",
+			"expectedFormat": "github-auto",
+			"category": "testing"
+		},
+		{
+			"repo": "cypress-io/cypress",
+			"stars": "48k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "testing"
+		},
+		{
+			"repo": "n8n-io/n8n",
+			"stars": "60k+",
+			"expectedFormat": "github-auto",
+			"category": "automation"
+		},
+		{
+			"repo": "supabase/supabase",
+			"stars": "80k+",
+			"expectedFormat": "github-auto",
+			"category": "backend"
+		},
+		{
+			"repo": "pocketbase/pocketbase",
+			"stars": "45k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "backend"
+		},
+		{
+			"repo": "strapi/strapi",
+			"stars": "66k+",
+			"expectedFormat": "keep-a-changelog",
+			"category": "cms"
+		},
+		{
+			"repo": "payloadcms/payload",
+			"stars": "32k+",
+			"expectedFormat": "changesets",
+			"category": "cms",
+			"isMonorepo": true
+		},
+		{
+			"repo": "withastro/astro",
+			"stars": "50k+",
+			"expectedFormat": "changesets",
+			"category": "frontend",
+			"isMonorepo": true
+		},
+		{
+			"repo": "solidjs/solid",
+			"stars": "34k+",
+			"expectedFormat": "github-auto",
+			"category": "frontend"
+		}
+	],
+	"formatDistribution": {
+		"github-auto": 32,
+		"keep-a-changelog": 16,
+		"changesets": 8,
+		"conventional-commits": 2,
+		"generic": 2
+	},
+	"categoryDistribution": {
+		"frontend": 10,
+		"ai": 8,
+		"backend": 4,
+		"devops": 4,
+		"testing": 4,
+		"editor": 4,
+		"language": 4,
+		"runtime": 3,
+		"database": 2,
+		"desktop": 3,
+		"linter": 4,
+		"other": 10
+	}
+}

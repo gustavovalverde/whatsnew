@@ -1,0 +1,54 @@
+{
+	"name": "@whatsnew/types",
+	"version": "0.1.0",
+	"description": "TypeScript types and Zod schemas for the WNF changelog format",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage"
+	},
+	"license": "MIT",
+	"author": "Gustavo Valverde",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gustavovalverde/wnf",
+		"directory": "packages/types"
+	},
+	"homepage": "https://github.com/gustavovalverde/wnf#readme",
+	"bugs": {
+		"url": "https://github.com/gustavovalverde/wnf/issues"
+	},
+	"keywords": [
+		"changelog",
+		"releases",
+		"whatsnew",
+		"wnf",
+		"types",
+		"typescript",
+		"zod"
+	],
+	"dependencies": {
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"@vitest/coverage-v8": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}
