@@ -18,7 +18,7 @@
 		"verify": "bun run lint && bun run typecheck && bun run test",
 		"prepare": "husky",
 		"ci:version": "changeset version && bun update",
-		"ci:publish": "bun publish --filter '@whatsnew/types' && bun publish --filter '@whatsnew/parsers' && bun publish --filter '@whatsnew/core' && bun publish --filter '@whatsnew/cli' && changeset tag"
+		"ci:publish": "cd packages/types && bun publish --access public && cd ../parsers && bun publish --access public && cd ../core && bun publish --access public && cd ../cli && bun publish --access public && cd ../.. && changeset tag"
 	},
 	"keywords": [
 		"changelog",
