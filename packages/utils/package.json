@@ -1,7 +1,7 @@
 {
 	"name": "@whatsnew/utils",
-	"version": "0.1.0",
-	"private": true,
+	"version": "0.1.3",
+	"description": "Shared utilities for WNF: Result type, text normalization, reference extraction",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -11,6 +11,9 @@
 			"default": "./dist/index.js"
 		}
 	},
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsc --watch",
@@ -18,8 +21,28 @@
 		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit"
 	},
+	"license": "MIT",
+	"author": "Gustavo Valverde",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gustavovalverde/whatsnew",
+		"directory": "packages/utils"
+	},
+	"homepage": "https://github.com/gustavovalverde/whatsnew#readme",
+	"bugs": {
+		"url": "https://github.com/gustavovalverde/whatsnew/issues"
+	},
+	"keywords": [
+		"whatsnew",
+		"wnf",
+		"utils",
+		"result-type"
+	],
 	"devDependencies": {
 		"typescript": "catalog:",
 		"vitest": "catalog:"
+	},
+	"engines": {
+		"node": ">=24"
 	}
 }
