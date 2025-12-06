@@ -16,7 +16,9 @@
 		"db:push": "bun run --filter @whatsnew/api db:push",
 		"db:generate": "bun run --filter @whatsnew/api db:generate",
 		"verify": "bun run lint && bun run typecheck && bun run test",
-		"prepare": "husky"
+		"prepare": "husky",
+		"ci:version": "changeset version && bun update",
+		"ci:publish": "bun publish --filter '@whatsnew/types' && bun publish --filter '@whatsnew/parsers' && bun publish --filter '@whatsnew/core' && bun publish --filter '@whatsnew/cli' && changeset tag"
 	},
 	"keywords": [
 		"changelog",
