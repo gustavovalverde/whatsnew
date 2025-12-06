@@ -1,6 +1,6 @@
 {
 	"name": "@whatsnew/parsers",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Multi-format changelog parsers for Keep-a-Changelog, Conventional Commits, Changesets, and more",
 	"type": "module",
 	"main": "./dist/index.js",
