@@ -53,5 +53,8 @@
 		"@types/node": "catalog:",
 		"typescript": "catalog:",
 		"vitest": "catalog:"
+	},
+	"engines": {
+		"node": ">=24"
 	}
 }

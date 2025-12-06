@@ -102,7 +102,7 @@ packages/parsers/src/categorizer/
 
 ## Configuration
 
-- **Runtime**: Bun 1.3.1+
+- **Runtime**: Bun 1.3.1+, Node 24+
 - **TypeScript**: ES2022, strict mode, composite projects
 - **Testing**: Vitest with coverage (text, json-summary, lcov)
 - **Linting**: Biome (formatter + linter)

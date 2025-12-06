@@ -177,7 +177,7 @@ NO_COLOR=1              # Disable colors
 ## Development
 
 ```bash
-# Prerequisites: Bun 1.3.1+
+# Prerequisites: Bun 1.3.1+, Node 24+
 bun install
 
 # Build all packages

@@ -56,5 +56,8 @@
 		"@vitest/coverage-v8": "^4.0.15",
 		"typescript": "catalog:",
 		"vitest": "catalog:"
+	},
+	"engines": {
+		"node": ">=24"
 	}
 }

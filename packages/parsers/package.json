@@ -52,5 +52,8 @@
 		"typescript": "catalog:",
 		"vitest": "catalog:",
 		"vite": "catalog:"
+	},
+	"engines": {
+		"node": ">=24"
 	}
 }
