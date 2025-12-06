@@ -19,8 +19,8 @@
 		"bin"
 	],
 	"scripts": {
-		"build": "tsc && bun build bin/whatsnew.ts --outfile bin/whatsnew.js --target node",
-		"build:bin": "bun build bin/whatsnew.ts --outfile bin/whatsnew.js --target node",
+		"build": "tsc && bun run build:bin",
+		"build:bin": "bun build bin/whatsnew.ts --outfile bin/whatsnew.js --target node --banner '#!/usr/bin/env node'",
 		"dev": "tsc --watch",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
@@ -31,12 +31,12 @@
 	"author": "Gustavo Valverde",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/gustavovalverde/wnf",
+		"url": "https://github.com/gustavovalverde/whatsnew",
 		"directory": "packages/cli"
 	},
-	"homepage": "https://github.com/gustavovalverde/wnf#readme",
+	"homepage": "https://github.com/gustavovalverde/whatsnew#readme",
 	"bugs": {
-		"url": "https://github.com/gustavovalverde/wnf/issues"
+		"url": "https://github.com/gustavovalverde/whatsnew/issues"
 	},
 	"keywords": [
 		"changelog",

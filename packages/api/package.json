@@ -16,7 +16,7 @@
 	"author": "Gustavo Valverde",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/gustavovalverde/wnf",
+		"url": "https://github.com/gustavovalverde/whatsnew",
 		"directory": "packages/api"
 	},
 	"dependencies": {

@@ -25,12 +25,12 @@
 	"author": "Gustavo Valverde",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/gustavovalverde/wnf",
+		"url": "https://github.com/gustavovalverde/whatsnew",
 		"directory": "packages/parsers"
 	},
-	"homepage": "https://github.com/gustavovalverde/wnf#readme",
+	"homepage": "https://github.com/gustavovalverde/whatsnew#readme",
 	"bugs": {
-		"url": "https://github.com/gustavovalverde/wnf/issues"
+		"url": "https://github.com/gustavovalverde/whatsnew/issues"
 	},
 	"keywords": [
 		"changelog",
