@@ -6,8 +6,7 @@
 #   1. Runs tests, lint, build, typecheck
 #   2. If changesets exist → creates "Version Packages" PR
 #   3. If PR merged → publishes to NPM + creates GitHub releases
-#
-# Next: GitHub release triggers build-binaries.yml
+#   4. Triggers build-binaries.yml via workflow_dispatch for CLI releases
 
 name: Release
 
@@ -23,6 +22,7 @@ permissions:
   contents: write
   pull-requests: write
   id-token: write
+  actions: write
 
 jobs:
   release:
@@ -75,3 +75,14 @@ jobs:
       - name: Log published packages
         if: steps.changesets.outputs.published == 'true'
         run: echo "Published:" && echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | "  - \(.name)@\(.version)"'
+
+      - name: Trigger binary builds for CLI releases
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Extract CLI package releases and trigger binary builds
+          echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | select(.name == "@whatsnew/cli") | "@whatsnew/cli@\(.version)"' | while read -r tag; do
+            echo "Triggering build-binaries for: $tag"
+            gh workflow run build-binaries.yml --ref main -f tag="$tag"
+          done
