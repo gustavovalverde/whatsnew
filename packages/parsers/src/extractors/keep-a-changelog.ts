@@ -12,6 +12,7 @@ import type {
 	ExtractedItem,
 	ExtractedRelease,
 } from "@whatsnew/types";
+import { stripTrailingRefs } from "@whatsnew/utils";
 
 /**
  * Maps Keep-a-Changelog section names to suggested categories
@@ -127,11 +128,14 @@ function extractSectionItems(
 		const bulletMatch = line.match(/^[-*]\s+(.+)$/);
 		if (!bulletMatch) continue;
 
-		const text = bulletMatch[1].trim();
-		if (!text) continue;
+		const rawText = bulletMatch[1].trim();
+		if (!rawText) continue;
 
 		// Extract refs from the text (PR numbers, issue numbers)
-		const refs = extractRefs(text);
+		const refs = extractRefs(rawText);
+
+		// Strip trailing refs from text to avoid duplication in output
+		const text = stripTrailingRefs(rawText);
 
 		items.push({
 			text,

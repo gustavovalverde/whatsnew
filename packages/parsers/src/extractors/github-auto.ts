@@ -12,6 +12,7 @@ import type {
 	ExtractedItem,
 	ExtractedRelease,
 } from "@whatsnew/types";
+import { stripTrailingRefs } from "@whatsnew/utils";
 
 /**
  * Maps GitHub auto-generated category titles to suggested categories
@@ -156,10 +157,13 @@ function parseEntries(lines: string[], sectionTitle: string): ExtractedItem[] {
 
 		const match = trimmed.match(entryRegex);
 		if (match) {
-			const [, title, author, prUrl, prNumber] = match;
+			const [, rawTitle, author, prUrl, prNumber] = match;
+
+			// Strip trailing refs from title to avoid duplication
+			const title = stripTrailingRefs(rawTitle.trim());
 
 			items.push({
-				text: title.trim(),
+				text: title,
 				refs: [prNumber],
 				sourceHint: {
 					section: sectionTitle,

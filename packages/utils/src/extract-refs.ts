@@ -105,3 +105,37 @@ export function extractRefs(text: string): string[] {
 	// Default to GitHub-style as it's most common
 	return extractGitHubRefs(text);
 }
+
+/**
+ * Strips trailing PR/issue references from text
+ *
+ * Removes patterns like "(#123)", "(#123, #456)", or markdown links "[#123](url)"
+ * from the end of text. This is used to clean text when refs are extracted to
+ * a separate field.
+ *
+ * @example
+ * ```typescript
+ * stripTrailingRefs("Add OAuth support (#123)");
+ * // Returns: "Add OAuth support"
+ *
+ * stripTrailingRefs("Fix bug (#123, #456)");
+ * // Returns: "Fix bug"
+ *
+ * stripTrailingRefs("Update docs ([#789](https://github.com/...))");
+ * // Returns: "Update docs"
+ *
+ * stripTrailingRefs("See #123 for details");
+ * // Returns: "See #123 for details" (not trailing, unchanged)
+ * ```
+ */
+export function stripTrailingRefs(text: string): string {
+	return (
+		text
+			// Match trailing markdown link: ([#123](url)) or [#123](url)
+			.replace(/\s*\(\[#\d+\]\([^)]+\)\)\s*$/, "")
+			.replace(/\s*\[#\d+\]\([^)]+\)\s*$/, "")
+			// Match trailing patterns like (#123) or (#123, #456) or (fixes #123)
+			.replace(/\s*\((?:fixes\s+)?#\d+(?:\s*,\s*#\d+)*\)\s*$/, "")
+			.trim()
+	);
+}

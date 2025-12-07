@@ -19,6 +19,11 @@ import { QUALITY_THRESHOLDS } from "./types.js";
 const CONVENTIONAL_COMMIT_PATTERN = /^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.+)$/;
 
 /**
+ * Trailing PR/issue reference pattern (e.g., "(#123)" at end of text)
+ */
+const TRAILING_REF_PATTERN = /\s*\(#\d+\)\s*$/;
+
+/**
  * Extract changelog items from commits
  * This is exported for reuse by getReleasesInRange for range-level augmentation
  */
@@ -32,14 +37,14 @@ export function extractItemsFromCommits(
 		const match = firstLine.match(CONVENTIONAL_COMMIT_PATTERN);
 
 		if (match) {
-			const [, type, scope, breaking, subject] = match;
-			// Conventional commits are structured, so they get a higher base score
-			const text = scope ? `**${scope}**: ${subject}` : subject;
+			const [, type, scope, breaking, rawSubject] = match;
+			// Strip trailing PR reference from subject to avoid duplication
+			const subject = rawSubject.replace(TRAILING_REF_PATTERN, "").trim();
 			items.push({
-				text,
+				text: subject,
 				refs: extractGitHubRefs(commit.commit.message),
 				conventionalType: type.toLowerCase(),
-				scope: scope || undefined,
+				scope: scope?.trim() || undefined,
 				breaking: breaking === "!" || undefined,
 				score: 0.8, // High score for structured conventional commits
 			});
@@ -47,8 +52,10 @@ export function extractItemsFromCommits(
 			// Non-conventional commit - validate before adding
 			const validation = validateChangelogItem(firstLine);
 			if (validation.valid) {
+				// Strip trailing PR reference to avoid duplication
+				const text = firstLine.replace(TRAILING_REF_PATTERN, "").trim();
 				items.push({
-					text: firstLine,
+					text,
 					refs: extractGitHubRefs(commit.commit.message),
 					score: validation.score,
 				});

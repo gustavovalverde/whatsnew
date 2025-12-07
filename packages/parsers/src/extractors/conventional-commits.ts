@@ -157,7 +157,7 @@ function parseConventionalCommitLine(line: string): ExtractedItem | null {
 		text: subject,
 		refs,
 		conventionalType,
-		scope: scope || undefined,
+		scope: scope?.trim() || undefined,
 		breaking,
 		sourceHint: {
 			section: conventionalType,

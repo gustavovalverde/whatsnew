@@ -260,7 +260,7 @@ function parseMessage(message: string): {
 	if (conventionalBreakingMatch) {
 		const [, typeMatch, scopeMatch, messageText] = conventionalBreakingMatch;
 		type = typeMatch.toLowerCase();
-		scope = scopeMatch;
+		scope = scopeMatch.trim();
 		text = messageText;
 		breaking = true;
 		return { text, type, scope, breaking };
@@ -271,7 +271,7 @@ function parseMessage(message: string): {
 	if (conventionalMatch) {
 		const [, typeMatch, scopeMatch, messageText] = conventionalMatch;
 		type = typeMatch.toLowerCase();
-		scope = scopeMatch;
+		scope = scopeMatch.trim();
 		text = messageText;
 		return { text, type, scope, breaking };
 	}

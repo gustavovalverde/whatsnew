@@ -404,5 +404,50 @@ describe("CLI Integration (with network)", () => {
 			const data = JSON.parse(result.stdout);
 			expect(data.spec).toBe("wnf/0.1");
 		});
+
+		it("produces normalized output without duplication", () => {
+			// This E2E test validates the normalized data model contract:
+			// - text should NOT contain scope when scope is in scope field
+			// - text should NOT contain trailing refs when refs are in refs field
+			//
+			// Uses shadcn-ui/ui because it exercises BOTH github.release AND commits
+			// sources, which is where the original duplication bug occurred.
+			const result = runCLI(["shadcn-ui/ui", "--format", "json"], {
+				timeout: 30000,
+			});
+
+			expect(result.success).toBe(true);
+
+			const data = JSON.parse(result.stdout);
+
+			for (const category of data.categories) {
+				for (const item of category.items) {
+					// If scope exists, text should not embed it
+					if (item.scope) {
+						expect(item.text).not.toContain(`**${item.scope}**:`);
+						expect(item.text).not.toContain(`[${item.scope}]`);
+					}
+
+					// If refs exist, text should not have trailing ref patterns
+					if (item.refs && item.refs.length > 0) {
+						for (const ref of item.refs) {
+							// Check for trailing patterns only (not mid-text refs)
+							const trailingPatterns = [
+								new RegExp(`\\(#${ref}\\)\\s*$`),
+								new RegExp(`\\[#${ref}\\]\\([^)]+\\)\\s*$`),
+							];
+							for (const pattern of trailingPatterns) {
+								expect(pattern.test(item.text)).toBe(false);
+							}
+						}
+					}
+
+					// Scope should be trimmed (no leading/trailing spaces)
+					if (item.scope) {
+						expect(item.scope).toBe(item.scope.trim());
+					}
+				}
+			}
+		});
 	});
 });

@@ -9,6 +9,7 @@ import type { ExtractedItem, ExtractedRelease } from "@whatsnew/types";
 import {
 	isContributorAcknowledgment,
 	isContributorSection,
+	stripTrailingRefs,
 	validateChangelogItem,
 } from "@whatsnew/utils";
 
@@ -80,23 +81,27 @@ export function extractGeneric(body: string): ExtractedRelease {
  * Returns null if the item doesn't pass validation.
  */
 function createValidatedItem(
-	text: string,
+	rawText: string,
 	section: string,
 ): ExtractedItem | null {
 	// Skip contributor acknowledgments
-	if (isContributorAcknowledgment(text)) {
+	if (isContributorAcknowledgment(rawText)) {
 		return null;
 	}
 
 	// Validate item quality
-	const validation = validateChangelogItem(text);
+	const validation = validateChangelogItem(rawText);
 	if (!validation.valid) {
 		return null;
 	}
 
+	// Extract refs then strip from text to avoid duplication in output
+	const refs = extractRefs(rawText);
+	const text = stripTrailingRefs(rawText);
+
 	return {
 		text,
-		refs: extractRefs(text),
+		refs,
 		sourceHint: {
 			section,
 			suggestedCategory: "other",

@@ -15,6 +15,7 @@ import {
 	normalizeLineEndings,
 	normalizeWhitespace,
 	parseVersion,
+	stripTrailingRefs,
 } from "../src/index.js";
 
 describe("escapeRegex", () => {
@@ -94,6 +95,52 @@ describe("extractGitLabRefs", () => {
 describe("extractRefs", () => {
 	it("defaults to GitHub-style extraction", () => {
 		expect(extractRefs("Fixed #123")).toEqual(["123"]);
+	});
+});
+
+describe("stripTrailingRefs", () => {
+	it("strips trailing (#123) pattern", () => {
+		expect(stripTrailingRefs("Add OAuth support (#123)")).toBe(
+			"Add OAuth support",
+		);
+	});
+
+	it("strips trailing (#123, #456) pattern", () => {
+		expect(stripTrailingRefs("Fix bugs (#123, #456)")).toBe("Fix bugs");
+	});
+
+	it("strips trailing (fixes #123) pattern", () => {
+		expect(stripTrailingRefs("Update docs (fixes #789)")).toBe("Update docs");
+	});
+
+	it("strips trailing markdown link [#123](url) pattern", () => {
+		expect(
+			stripTrailingRefs(
+				"Fix crash [#19242](https://github.com/tailwindlabs/tailwindcss/pull/19242)",
+			),
+		).toBe("Fix crash");
+	});
+
+	it("strips trailing markdown link wrapped in parens ([#123](url))", () => {
+		expect(
+			stripTrailingRefs(
+				"Substitute @variant ([#19263](https://github.com/org/repo/pull/19263))",
+			),
+		).toBe("Substitute @variant");
+	});
+
+	it("leaves non-trailing refs unchanged", () => {
+		expect(stripTrailingRefs("See #123 for details")).toBe(
+			"See #123 for details",
+		);
+	});
+
+	it("leaves text without refs unchanged", () => {
+		expect(stripTrailingRefs("Simple text")).toBe("Simple text");
+	});
+
+	it("handles whitespace around trailing refs", () => {
+		expect(stripTrailingRefs("Add feature  (#123)  ")).toBe("Add feature");
 	});
 });
 

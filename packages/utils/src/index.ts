@@ -25,6 +25,7 @@ export {
 	extractGitHubRefs,
 	extractGitLabRefs,
 	extractRefs,
+	stripTrailingRefs,
 } from "./extract-refs.js";
 // Item validation
 export {

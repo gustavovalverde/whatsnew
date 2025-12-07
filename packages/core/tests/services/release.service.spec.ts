@@ -285,10 +285,12 @@ fix(ui): correct button styling on mobile`,
 			expect(fixesCategory).toBeDefined();
 			expect(fixesCategory?.items.length).toBeGreaterThan(0);
 
-			// Check that refs are extracted
+			// Check that refs are extracted (refs are now stripped from text)
 			const fixWithRef = fixesCategory?.items.find((item) =>
-				item.text.includes("#123"),
+				item.refs?.includes("123"),
 			);
+			expect(fixWithRef).toBeDefined();
+			expect(fixWithRef?.text).toBe("Resolved memory leak");
 			expect(fixWithRef?.refs).toContain("123");
 		});
 
