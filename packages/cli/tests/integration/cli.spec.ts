@@ -483,6 +483,10 @@ describe("CLI Integration (with network)", () => {
 				"colinhacks/zod",
 				"TanStack/query",
 				"pmndrs/zustand",
+				// Additional repos
+				"midday-ai/midday",
+				"polarsource/polar",
+				"47ng/nuqs",
 			];
 
 			/**
