@@ -93,18 +93,46 @@ jobs:
 
 ## How It Works
 
-whatsnew uses a multi-source fallback strategy to provide useful output regardless of how well a project documents its releases:
+whatsnew is **deterministic-first**: it uses rule-based parsing before considering AI. This makes results fast, reproducible, and free to run.
+
+### Multi-Source Fallback
 
 ```
-GitHub Releases  →  CHANGELOG.md  →  Commit History
-    (primary)        (secondary)       (fallback)
+GitHub Releases  →  CHANGELOG.md  →  Commit History  →  AI Enhancement
+    (primary)        (secondary)       (tertiary)        (when needed)
 ```
 
 1. **Release notes** – Parsed with format detection (Changesets, Keep-a-Changelog, Conventional Commits)
 2. **Changelog files** – Falls back to CHANGELOG.md if release notes are sparse
 3. **Commit history** – Always available as a last resort
+4. **AI enhancement** – Optional fallback when deterministic parsing produces low-quality results
 
 Each response includes a confidence score so you know how reliable the data is.
+
+### When AI Kicks In
+
+AI enhancement is **optional** and only activates when:
+- An AI API key is configured (see [Environment Variables](#environment-variables))
+- Deterministic parsing produces low-quality results
+
+**What triggers AI fallback:**
+
+| Condition | Example |
+|-----------|---------|
+| **Low confidence** (<0.6) | Parser uncertain about categorization |
+| **All items uncategorized** | Everything ends up in "other" category |
+| **High uncategorized ratio** (>80%) | Most items couldn't be classified |
+| **Empty extraction** | 150+ chars of content but no items extracted |
+| **Missing items** | Content suggests more items than were extracted |
+
+**Real-world examples where AI helps:**
+
+- Repos with free-form release notes (no consistent format)
+- Legacy projects with inconsistent changelog styles
+- Auto-generated notes that don't follow conventions
+- Non-English changelogs that deterministic rules miss
+
+**Without AI configured:** whatsnew still works perfectly—you just get deterministic results with lower confidence scores for edge cases.
 
 ## Output Formats
 
@@ -167,12 +195,75 @@ whatsnew is built as a monorepo. Use individual packages for programmatic access
 
 ## Configuration
 
-### Environment Variables
+whatsnew supports multiple configuration methods. Priority order (highest first):
+1. CLI flags (`--github-token`, `--ai-key`)
+2. Environment variables
+3. Config file (`~/.config/whatsnew/config.json`)
+
+### Quick Setup
 
 ```bash
-GITHUB_TOKEN=ghp_xxx    # Recommended: 5,000 req/hr vs 60 without
-NO_COLOR=1              # Disable colors
+# Set your GitHub token (one-time)
+whatsnew config set github_token ghp_xxxxxxxxxxxx
+
+# Optional: Set AI API key for enhanced parsing
+whatsnew config set ai.api_key sk-ant-xxxxxxxxxxxx
+
+# View current configuration
+whatsnew config list
 ```
+
+### Config File
+
+Located at `~/.config/whatsnew/config.json` (XDG-compliant):
+
+```json
+{
+  "github_token": "ghp_xxx",
+  "ai": {
+    "provider": "anthropic",
+    "api_key": "sk-ant-xxx"
+  }
+}
+```
+
+### Config Commands
+
+```bash
+whatsnew config set <key> <value>   # Set a value (validates tokens)
+whatsnew config list                # Show current config (tokens masked)
+whatsnew config path                # Show config file location
+whatsnew config unset <key>         # Remove a value
+```
+
+### Environment Variables
+
+Environment variables override config file values:
+
+```bash
+# GitHub API access
+GITHUB_TOKEN=ghp_xxx              # Recommended: 5,000 req/hr vs 60 without
+
+# Display options
+NO_COLOR=1                        # Disable colored output
+
+# AI Enhancement (optional - set ONE of these to enable)
+ANTHROPIC_API_KEY=sk-ant-xxx      # Direct Anthropic API
+OPENAI_API_KEY=sk-xxx             # Direct OpenAI API
+AI_GATEWAY_API_KEY=xxx            # Vercel AI Gateway (multi-provider)
+AI_PROVIDER=anthropic             # anthropic or openai (default: anthropic)
+```
+
+### CLI Flags
+
+For one-off overrides without modifying config:
+
+```bash
+whatsnew vercel/ai --github-token ghp_xxx
+whatsnew vercel/ai --ai-key sk-ant-xxx
+```
+
+**Note:** AI is auto-enabled when an API key is present. It only runs when deterministic parsing produces low-quality results (see [When AI Kicks In](#when-ai-kicks-in)).
 
 ## Development
 

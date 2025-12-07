@@ -24,8 +24,11 @@
 		"dev": "tsc --watch",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
+		"test:unit": "vitest run --exclude 'tests/integration/**'",
+		"test:e2e": "vitest run tests/integration/",
 		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"cli": "bun bin/whatsnew.ts"
 	},
 	"license": "MIT",
 	"author": "Gustavo Valverde",

@@ -300,13 +300,13 @@ describe("WNFDocumentSchema", () => {
 
 	it("rejects missing required fields", () => {
 		const missingSpec = { ...validDocument };
-		delete (missingSpec as Record<string, unknown>).spec;
+		(missingSpec as Record<string, unknown>).spec = undefined;
 
 		const missingSource = { ...validDocument };
-		delete (missingSource as Record<string, unknown>).source;
+		(missingSource as Record<string, unknown>).source = undefined;
 
 		const missingSummary = { ...validDocument };
-		delete (missingSummary as Record<string, unknown>).summary;
+		(missingSummary as Record<string, unknown>).summary = undefined;
 
 		expect(WNFDocumentSchema.safeParse(missingSpec).success).toBe(false);
 		expect(WNFDocumentSchema.safeParse(missingSource).success).toBe(false);

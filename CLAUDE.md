@@ -34,6 +34,23 @@ bun run lint
 bun run dev
 ```
 
+### CLI Development
+
+```bash
+# Run CLI directly (no build required)
+bun run --filter @whatsnew/cli cli -- --help
+bun run --filter @whatsnew/cli cli -- config list
+bun run --filter @whatsnew/cli cli -- vercel/ai
+
+# CLI tests
+bun run --filter @whatsnew/cli test        # All tests (unit + e2e)
+bun run --filter @whatsnew/cli test:unit   # Unit tests only (fast)
+bun run --filter @whatsnew/cli test:e2e    # Integration tests (spawns CLI)
+
+# Test built binary
+node packages/cli/bin/whatsnew.js --help
+```
+
 ## Architecture
 
 Bun-based monorepo with layered package dependencies:
@@ -47,6 +64,7 @@ Bun-based monorepo with layered package dependencies:
        ↓
 @whatsnew/core     → Business logic: ReleaseService, GitHubClient, DataAggregator
        ↓
+@whatsnew/cli      → Command-line interface with config management
 @whatsnew/api      → HTTP API: Hono framework, routes, middleware
 ```
 
@@ -73,6 +91,19 @@ The parsers package follows a separation of concerns:
 - **Monorepo Support**: Package filtering via `?package=name` query param, auto-detection
 - **Result Type**: Explicit error handling with `Result<T, E>` (from @whatsnew/utils)
 
+### CLI Configuration System
+
+The CLI uses a layered configuration with priority (highest first):
+1. CLI flags (`--github-token`, `--ai-key`)
+2. Environment variables (`GITHUB_TOKEN`, `ANTHROPIC_API_KEY`)
+3. Config file (`~/.config/whatsnew/config.json`)
+
+Config module structure (`packages/cli/src/config/`):
+- `paths.ts` - XDG-compliant path resolution
+- `loader.ts` - Load/save with permission handling (0600 files, 0700 dirs)
+- `security.ts` - Token masking, format validation, provider detection
+- `types.ts` - TypeScript interfaces
+
 ### API Endpoint
 
 ```
@@ -98,6 +129,22 @@ packages/parsers/src/categorizer/
 ├── inference.ts   # 4-tier inference logic
 ├── keywords.ts    # Keyword analysis
 └── signals.ts     # Constants (CATEGORY_SIGNALS, CATEGORY_TITLES, etc.)
+```
+
+### CLI Integration Testing
+
+The CLI package includes a test helper for spawning the CLI as a subprocess:
+
+```typescript
+import { runCLI, createTempConfigDir } from "../helpers/cli.js";
+
+const result = runCLI(["config", "list"]);
+expect(result.success).toBe(true);
+
+// Isolated config testing
+const { env, cleanup } = await createTempConfigDir();
+runCLI(["config", "set", "key", "value"], { env });
+await cleanup();
 ```
 
 ## Configuration

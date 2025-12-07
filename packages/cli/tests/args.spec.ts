@@ -139,6 +139,88 @@ describe("parseArgs", () => {
 			expect(result.format).toBe("json");
 		});
 	});
+
+	describe("config subcommand", () => {
+		it("parses config command", () => {
+			const result = parseArgs(["config", "list"]);
+			expect(result.command).toBe("config");
+			expect(result.commandArgs).toEqual(["list"]);
+		});
+
+		it("parses config set with key and value", () => {
+			const result = parseArgs(["config", "set", "github_token", "ghp_xxx"]);
+			expect(result.command).toBe("config");
+			expect(result.commandArgs).toEqual(["set", "github_token", "ghp_xxx"]);
+		});
+
+		it("parses config with --skip-validation", () => {
+			const result = parseArgs([
+				"config",
+				"set",
+				"github_token",
+				"ghp_xxx",
+				"--skip-validation",
+			]);
+			expect(result.command).toBe("config");
+			expect(result.commandArgs).toEqual([
+				"set",
+				"github_token",
+				"ghp_xxx",
+				"--skip-validation",
+			]);
+		});
+
+		it("does not process flags after config command", () => {
+			// After config subcommand, all args go to commandArgs
+			const result = parseArgs(["config", "set", "--help"]);
+			expect(result.command).toBe("config");
+			expect(result.commandArgs).toEqual(["set", "--help"]);
+			expect(result.help).toBe(false);
+		});
+	});
+
+	describe("--github-token flag", () => {
+		it("parses --github-token with value", () => {
+			const result = parseArgs([
+				"vercel/ai",
+				"--github-token",
+				"ghp_xxxxxxxxxxxx",
+			]);
+			expect(result.githubToken).toBe("ghp_xxxxxxxxxxxx");
+		});
+
+		it("includes target with token", () => {
+			const result = parseArgs([
+				"vercel/ai",
+				"--github-token",
+				"ghp_xxxxxxxxxxxx",
+			]);
+			expect(result.targets).toEqual(["vercel/ai"]);
+			expect(result.githubToken).toBe("ghp_xxxxxxxxxxxx");
+		});
+	});
+
+	describe("--ai-key flag", () => {
+		it("parses --ai-key with value", () => {
+			const result = parseArgs(["vercel/ai", "--ai-key", "sk-ant-api03-xxx"]);
+			expect(result.aiKey).toBe("sk-ant-api03-xxx");
+		});
+
+		it("works with other flags", () => {
+			const result = parseArgs([
+				"vercel/ai",
+				"--ai-key",
+				"sk-xxx",
+				"--github-token",
+				"ghp_xxx",
+				"--format",
+				"json",
+			]);
+			expect(result.aiKey).toBe("sk-xxx");
+			expect(result.githubToken).toBe("ghp_xxx");
+			expect(result.format).toBe("json");
+		});
+	});
 });
 
 describe("parseTarget", () => {

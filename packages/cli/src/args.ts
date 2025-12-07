@@ -4,6 +4,11 @@
  */
 
 export interface ParsedArgs {
+	/** Subcommand: config, or undefined for normal operation */
+	command?: "config";
+	/** Arguments for subcommands */
+	commandArgs: string[];
+	/** Repository targets */
 	targets: string[];
 	since?: string;
 	until?: string;
@@ -11,6 +16,10 @@ export interface ParsedArgs {
 	format: "text" | "json" | "markdown";
 	help: boolean;
 	version: boolean;
+	/** GitHub token override */
+	githubToken?: string;
+	/** AI API key override */
+	aiKey?: string;
 }
 
 const FLAG_ALIASES: Record<string, string> = {
@@ -24,11 +33,19 @@ const FLAG_ALIASES: Record<string, string> = {
 
 export function parseArgs(argv: string[]): ParsedArgs {
 	const args: ParsedArgs = {
+		commandArgs: [],
 		targets: [],
 		format: "text",
 		help: false,
 		version: false,
 	};
+
+	// Check for subcommands first
+	if (argv.length > 0 && argv[0] === "config") {
+		args.command = "config";
+		args.commandArgs = argv.slice(1);
+		return args;
+	}
 
 	let i = 0;
 	while (i < argv.length) {
@@ -62,6 +79,12 @@ export function parseArgs(argv: string[]): ParsedArgs {
 					`Invalid format: ${format}. Use 'text', 'json', or 'markdown'.`,
 				);
 			}
+		} else if (arg === "--github-token") {
+			i++;
+			args.githubToken = argv[i];
+		} else if (arg === "--ai-key") {
+			i++;
+			args.aiKey = argv[i];
 		} else if (arg.startsWith("-")) {
 			throw new Error(`Unknown flag: ${arg}. Use --help for usage.`);
 		} else {

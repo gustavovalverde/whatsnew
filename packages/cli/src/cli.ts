@@ -5,6 +5,12 @@
 import { ReleaseService } from "@whatsnew/core";
 import type { WNFAggregatedDocument, WNFDocument } from "@whatsnew/types";
 import { type ParsedArgs, parseArgs, parseTarget } from "./args.js";
+import { runConfigCommand } from "./commands/config.js";
+import {
+	getConfigPathDisplay,
+	resolveConfig,
+	warnIfRoot,
+} from "./config/index.js";
 import { type FormatType, format } from "./formatters/index.js";
 import { parseRange, type RangeQuery } from "./range-parser.js";
 import { colors } from "./utils/colors.js";
@@ -12,13 +18,15 @@ import { CLIError } from "./utils/errors.js";
 
 const VERSION = "0.1.0";
 
-const HELP_TEXT = `
+function getHelpText(): string {
+	return `
 ${colors.bold("whatsnew")} - See what changed in your dependencies
 
 ${colors.bold("USAGE")}
   whatsnew <repo>                    Show latest release
   whatsnew <repo>@<version>          Show specific version
   whatsnew <repo> --since <value>    Show changes since version or date
+  whatsnew config <command>          Manage configuration
 
 ${colors.bold("ARGUMENTS")}
   <repo>                             GitHub repo (owner/repo format)
@@ -30,10 +38,22 @@ ${colors.bold("RANGE OPTIONS")} ${colors.dim("(auto-detects date vs version)")}
 ${colors.bold("OTHER OPTIONS")}
   --package, -p <name>               Filter monorepo by package name
   --format, -f <type>                Output format: text, json, markdown
+  --github-token <token>             Override GitHub token for this command
+  --ai-key <key>                     Override AI API key for this command
   --help, -h                         Show this help message
   --version, -v                      Show version
 
+${colors.bold("CONFIG COMMANDS")}
+  config set <key> <value>           Set a configuration value
+  config list                        Show current configuration
+  config path                        Show configuration file path
+  config unset <key>                 Remove a configuration value
+
 ${colors.bold("EXAMPLES")}
+  ${colors.dim("# First-time setup")}
+  whatsnew config set github_token ghp_xxxxxxxxxxxx
+  whatsnew config set ai.api_key sk-ant-xxxxxxxxxxxx
+
   ${colors.dim("# Latest release")}
   whatsnew vercel/ai
 
@@ -56,16 +76,39 @@ ${colors.bold("EXAMPLES")}
   ${colors.dim("# JSON output")}
   whatsnew vercel/ai --format json
 
+${colors.bold("CONFIGURATION")}
+  Tokens can be set via config file, environment variables, or CLI flags.
+  Priority: CLI flags > environment variables > config file
+
+  ${colors.dim(`Config file: ${getConfigPathDisplay()}`)}
+
 ${colors.bold("ENVIRONMENT")}
   GITHUB_TOKEN                       GitHub API token for higher rate limits
   NO_COLOR                           Disable colored output
+
+${colors.bold("AI ENHANCEMENT")} ${colors.dim("(optional - improves results for poorly-documented repos)")}
+  ANTHROPIC_API_KEY                  Enable AI fallback with Anthropic
+  OPENAI_API_KEY                     Enable AI fallback with OpenAI
+  AI_GATEWAY_API_KEY                 Enable AI fallback with Vercel AI Gateway
+
+  ${colors.dim("AI auto-enables when a key is set. Only runs when parsing quality is low.")}
 `;
+}
 
 export async function run(argv: string[]): Promise<void> {
+	// Warn if running as root
+	warnIfRoot();
+
 	const args = parseArgs(argv);
 
+	// Handle config subcommand
+	if (args.command === "config") {
+		await runConfigCommand(args.commandArgs);
+		return;
+	}
+
 	if (args.help) {
-		console.log(HELP_TEXT);
+		console.log(getHelpText());
 		return;
 	}
 
@@ -95,9 +138,15 @@ export async function run(argv: string[]): Promise<void> {
 
 	const [owner, repoName] = repo.split("/");
 
-	// Initialize service
+	// Resolve configuration from all sources
+	const config = await resolveConfig({
+		githubToken: args.githubToken,
+		aiKey: args.aiKey,
+	});
+
+	// Initialize service with resolved config
 	const service = new ReleaseService({
-		token: process.env.GITHUB_TOKEN,
+		token: config.githubToken,
 		enableFallback: true,
 	});
 
