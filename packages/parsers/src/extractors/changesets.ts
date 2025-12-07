@@ -127,6 +127,30 @@ function extractSection(
 			continue;
 		}
 
+		// Extended changesets format (used by shadcn, etc.):
+		// -   [#PR](url) [`commit`](url) Thanks [@author](url)! - message
+		const extendedMatch = line.match(
+			/^-\s+\[#(\d+)\]\([^)]+\)\s*\[`([a-f0-9]+)`\]\([^)]+\)\s*Thanks\s*\[@[^\]]+\]\([^)]+\)!\s*-\s*(.+)$/i,
+		);
+
+		if (extendedMatch) {
+			if (currentItem) {
+				items.push(finalizeItem(currentItem, sectionType));
+			}
+
+			const [, prNumber, hash, message] = extendedMatch;
+			const parsed = parseMessage(message);
+
+			currentItem = {
+				text: parsed.text,
+				refs: [`#${prNumber}`, hash.slice(0, 7)],
+				conventionalType: parsed.type,
+				scope: parsed.scope,
+				breaking: parsed.breaking || sectionType === "major",
+			};
+			continue;
+		}
+
 		// Official Changesets format: - [hash] **(packages)** Description
 		const officialMatch = line.match(
 			/^-\s+\[([a-z0-9]+)\]\s*(?:\*\*\(([^)]+)\)\*\*)?\s*(.+)$/i,

@@ -180,6 +180,27 @@ describe("extractChangesets", () => {
 		});
 	});
 
+	describe("extended format (shadcn style)", () => {
+		it("should extract items with PR links, commit URLs, and Thanks messages", () => {
+			const body = `### Patch Changes
+
+-   [#8900](https://github.com/shadcn-ui/ui/pull/8900) [\`d0fb73ac0e4e7f6d02768586c5232bbc6b33a3c3\`](https://github.com/shadcn-ui/ui/commit/d0fb73ac0e4e7f6d02768586c5232bbc6b33a3c3) Thanks [@shadcn](https://github.com/shadcn)! - do not install base style when adding themes
+
+-   [#7557](https://github.com/shadcn-ui/ui/pull/7557) [\`ad6a3c63678bb31dbfb94536ee1d4aa4f06a8b8d\`](https://github.com/shadcn-ui/ui/commit/ad6a3c63678bb31dbfb94536ee1d4aa4f06a8b8d) Thanks [@remorses](https://github.com/remorses)! - Fix utils import transform`;
+
+			const result = extractChangesets(body);
+
+			expect(result.items).toHaveLength(2);
+			expect(result.items[0].text).toBe(
+				"do not install base style when adding themes",
+			);
+			expect(result.items[0].refs).toContain("#8900");
+			expect(result.items[0].refs).toContain("d0fb73a");
+			expect(result.items[1].text).toBe("Fix utils import transform");
+			expect(result.items[1].refs).toContain("#7557");
+		});
+	});
+
 	describe("edge cases", () => {
 		it("should return empty items for empty body", () => {
 			const result = extractChangesets("");
