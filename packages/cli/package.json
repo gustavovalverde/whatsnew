@@ -1,6 +1,6 @@
 {
 	"name": "@whatsnew/cli",
-	"version": "0.1.3",
+	"version": "0.2.0",
 	"description": "CLI tool to see what changed in your dependencies - whatsnew command",
 	"type": "module",
 	"bin": {
