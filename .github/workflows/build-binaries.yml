@@ -6,6 +6,11 @@
 #   1. build:           Compile binaries for all platforms (parallel matrix)
 #   2. publish:         Upload binaries + checksums to GitHub release
 #   3. update-homebrew: Update formula with SHA256s (only for @whatsnew/cli@ tags)
+#
+# Local testing:
+#   bun run build && bun build --compile packages/cli/bin/whatsnew.ts --outfile whatsnew
+#   ./whatsnew --version
+#   shasum -a 256 whatsnew
 
 name: Build Binaries
 
