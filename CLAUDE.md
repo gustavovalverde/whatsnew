@@ -78,11 +78,18 @@ The parsers package follows a separation of concerns:
    - `extractGitHubAuto()` - GitHub auto-generated releases
    - `extractConventionalCommits()` - Conventional commits
    - `extractGeneric()` - Generic markdown format
+   - `extractGitLabOfficial()` - GitLab official release format
 
 2. **Universal Categorizer** (`packages/parsers/src/categorizer/`) - Consistent categorization
    - 4-tier inference: explicit breaking → conventional commit type → keyword analysis → source hint
    - Same text = same category, regardless of source format
    - `categorizeItems(items)` - converts extracted items to WNF categories
+
+3. **Normalized Data Model** - All extractors follow a contract:
+   - `text`: Clean description (no embedded scope/refs when extracted to separate fields)
+   - `scope`: Separate field, trimmed (no leading/trailing spaces)
+   - `refs`: Separate field, trailing refs stripped from text via `stripTrailingRefs()`
+   - Contract tests in `packages/parsers/tests/extractors/normalized-output.spec.ts`
 
 ### Key Patterns
 
@@ -145,6 +152,14 @@ expect(result.success).toBe(true);
 const { env, cleanup } = await createTempConfigDir();
 runCLI(["config", "set", "key", "value"], { env });
 await cleanup();
+```
+
+### E2E Tests
+
+The CLI E2E tests validate against 23+ real GitHub repositories to ensure the normalized output contract works across different release formats. Tests require `GITHUB_TOKEN` to run:
+
+```bash
+GITHUB_TOKEN=xxx bun run --filter @whatsnew/cli test:e2e
 ```
 
 ## Configuration

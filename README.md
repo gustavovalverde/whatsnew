@@ -134,6 +134,32 @@ AI enhancement is **optional** and only activates when:
 
 **Without AI configured:** whatsnew still works perfectly—you just get deterministic results with lower confidence scores for edge cases.
 
+## Known Limitations
+
+### Input Quality Affects Output Quality
+
+whatsnew extracts and presents information from source repositories. When commit messages or release notes are low-quality, the output reflects this limitation.
+
+**Example of poor source commits:**
+```
+fix
+fix: lint
+fix: sidebar
+```
+
+**Produces unhelpful output:**
+```
+Bug Fixes
+  [*] lint
+  [*] sidebar
+```
+
+This is not a bug—whatsnew accurately reflects what's in the source. Repositories following [Conventional Commits](https://www.conventionalcommits.org) or [Keep a Changelog](https://keepachangelog.com) produce significantly better results.
+
+**The confidence score helps identify this:** Lower confidence often indicates sparse or low-quality source data.
+
+See [ADR-001: Input Quality Limitations](./docs/decisions/001-input-quality-limitations.md) for detailed analysis and future mitigation strategies.
+
 ## Output Formats
 
 ### Terminal (default)
@@ -290,6 +316,7 @@ bun run lint
 - [CLI Architecture](./docs/architecture/cli.md) – Command design and implementation
 - [WNF Specification](./docs/wnf-specification.md) – Machine-readable changelog format
 - [Implementation Roadmap](./docs/implementation-roadmap.md) – Development phases
+- [Architecture Decisions](./docs/decisions/) – ADRs documenting key technical decisions
 
 ## License
 
