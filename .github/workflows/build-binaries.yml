@@ -76,6 +76,7 @@ jobs:
         run: bun run build
 
       - name: Build binary
+        shell: bash
         run: |
           VERSION=$(node -p "require('./packages/cli/package.json').version")
           bun build --compile --target=${{ matrix.target }} packages/cli/bin/whatsnew.ts --outfile ${{ matrix.artifact }} --define "__VERSION__='$VERSION'"
