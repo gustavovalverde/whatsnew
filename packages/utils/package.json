@@ -1,6 +1,6 @@
 {
 	"name": "@whatsnew/utils",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"description": "Shared utilities for WNF: Result type, text normalization, reference extraction",
 	"type": "module",
 	"main": "./dist/index.js",

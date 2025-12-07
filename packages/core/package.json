@@ -1,6 +1,6 @@
 {
 	"name": "@whatsnew/core",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Core business logic for WNF changelog intelligence - ReleaseService, GitHub client, and data aggregation",
 	"type": "module",
 	"main": "./dist/index.js",
