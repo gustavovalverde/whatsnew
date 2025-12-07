@@ -21,6 +21,8 @@
 	},
 	"dependencies": {
 		"@whatsnew/core": "workspace:*",
+		"@whatsnew/parsers": "workspace:*",
+		"@whatsnew/types": "workspace:*",
 		"hono": "^4.10.3",
 		"dotenv": "^17.2.3",
 		"zod": "catalog:"

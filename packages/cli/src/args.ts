@@ -3,6 +3,8 @@
  * Uses native process.argv - no external library needed
  */
 
+import type { CategoryFilter } from "@whatsnew/types";
+
 export interface ParsedArgs {
 	/** Subcommand: config, or undefined for normal operation */
 	command?: "config";
@@ -20,6 +22,8 @@ export interface ParsedArgs {
 	githubToken?: string;
 	/** AI API key override */
 	aiKey?: string;
+	/** Category filter: important, maintenance, or all (default) */
+	filter?: CategoryFilter;
 }
 
 const FLAG_ALIASES: Record<string, string> = {
@@ -29,6 +33,7 @@ const FLAG_ALIASES: Record<string, string> = {
 	"-h": "--help",
 	"-v": "--version",
 	"-p": "--package",
+	"-i": "--important",
 };
 
 export function parseArgs(argv: string[]): ParsedArgs {
@@ -85,6 +90,22 @@ export function parseArgs(argv: string[]): ParsedArgs {
 		} else if (arg === "--ai-key") {
 			i++;
 			args.aiKey = argv[i];
+		} else if (arg === "--important" || arg === "-i") {
+			args.filter = "important";
+		} else if (arg === "--filter") {
+			i++;
+			const filterValue = argv[i];
+			if (
+				filterValue === "important" ||
+				filterValue === "maintenance" ||
+				filterValue === "all"
+			) {
+				args.filter = filterValue;
+			} else {
+				throw new Error(
+					`Invalid filter: ${filterValue}. Use 'important', 'maintenance', or 'all'.`,
+				);
+			}
 		} else if (arg.startsWith("-")) {
 			throw new Error(`Unknown flag: ${arg}. Use --help for usage.`);
 		} else {

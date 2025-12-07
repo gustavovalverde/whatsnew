@@ -496,6 +496,41 @@ export interface WNFAggregatedDocument {
 export type CategoryId = Category["id"];
 
 /**
+ * Category metadata for filtering and display
+ */
+export interface CategoryMeta {
+	/** Whether this category is considered user-facing/important */
+	important: boolean;
+	/** Display priority (1 = highest) */
+	priority: number;
+}
+
+/**
+ * Metadata for each category type
+ * Used by filter logic and downstream clients
+ */
+export const CATEGORY_METADATA: Record<CategoryId, CategoryMeta> = {
+	breaking: { important: true, priority: 1 },
+	security: { important: true, priority: 2 },
+	features: { important: true, priority: 3 },
+	fixes: { important: true, priority: 4 },
+	perf: { important: true, priority: 5 },
+	deps: { important: false, priority: 6 },
+	refactor: { important: false, priority: 7 },
+	chore: { important: false, priority: 8 },
+	docs: { important: false, priority: 9 },
+	other: { important: false, priority: 10 },
+};
+
+/**
+ * Filter types for category filtering
+ * - important: Show breaking, security, features, fixes, perf + breaking items from any category
+ * - maintenance: Show deps, refactor, chore, docs, other (excluding breaking items)
+ * - all: Show all categories (default)
+ */
+export type CategoryFilter = "important" | "maintenance" | "all";
+
+/**
  * Source hint from the original changelog format.
  * This is metadata about where the item came from, NOT the final categorization.
  */

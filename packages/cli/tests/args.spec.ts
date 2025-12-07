@@ -221,6 +221,60 @@ describe("parseArgs", () => {
 			expect(result.format).toBe("json");
 		});
 	});
+
+	describe("--important flag", () => {
+		it("parses --important", () => {
+			const result = parseArgs(["vercel/ai", "--important"]);
+			expect(result.filter).toBe("important");
+		});
+
+		it("parses -i alias", () => {
+			const result = parseArgs(["vercel/ai", "-i"]);
+			expect(result.filter).toBe("important");
+		});
+	});
+
+	describe("--filter flag", () => {
+		it("parses --filter important", () => {
+			const result = parseArgs(["vercel/ai", "--filter", "important"]);
+			expect(result.filter).toBe("important");
+		});
+
+		it("parses --filter maintenance", () => {
+			const result = parseArgs(["vercel/ai", "--filter", "maintenance"]);
+			expect(result.filter).toBe("maintenance");
+		});
+
+		it("parses --filter all", () => {
+			const result = parseArgs(["vercel/ai", "--filter", "all"]);
+			expect(result.filter).toBe("all");
+		});
+
+		it("throws on invalid filter value", () => {
+			expect(() => parseArgs(["vercel/ai", "--filter", "invalid"])).toThrow(
+				"Invalid filter: invalid",
+			);
+		});
+
+		it("defaults to undefined (shows all)", () => {
+			const result = parseArgs(["vercel/ai"]);
+			expect(result.filter).toBeUndefined();
+		});
+
+		it("works with other flags", () => {
+			const result = parseArgs([
+				"vercel/ai",
+				"--important",
+				"--format",
+				"json",
+				"--since",
+				"v3.0.0",
+			]);
+			expect(result.filter).toBe("important");
+			expect(result.format).toBe("json");
+			expect(result.since).toBe("v3.0.0");
+		});
+	});
 });
 
 describe("parseTarget", () => {

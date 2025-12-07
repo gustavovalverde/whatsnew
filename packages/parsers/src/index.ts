@@ -28,5 +28,13 @@ export {
 	extractKeepAChangelog,
 } from "./extractors/index.js";
 
+// Category Filtering
+export {
+	filterCategories,
+	IMPORTANT_CATEGORIES,
+	isImportantCategory,
+	isMaintenanceCategory,
+	MAINTENANCE_CATEGORIES,
+} from "./filter/index.js";
 // Format Detection
 export { type ChangelogFormat, FormatDetector } from "./format-detector.js";

@@ -1,4 +1,6 @@
 import { ReleaseService } from "@whatsnew/core";
+import { filterCategories } from "@whatsnew/parsers";
+import type { CategoryFilter } from "@whatsnew/types";
 import { Hono } from "hono";
 import { env } from "../../config/env.js";
 
@@ -20,6 +22,22 @@ export function createReleaseRouter() {
 		async (c) => {
 			const { owner, repo } = c.req.param();
 			const packageName = c.req.query("package");
+			const filterParam = c.req.query("filter") as CategoryFilter | undefined;
+
+			// Validate filter param
+			if (
+				filterParam &&
+				!["important", "maintenance", "all"].includes(filterParam)
+			) {
+				return c.json(
+					{
+						error: "Invalid filter",
+						message: `Invalid filter value: ${filterParam}`,
+						hint: "Valid values: important, maintenance, all",
+					},
+					400,
+				);
+			}
 
 			try {
 				// Check if this is a monorepo
@@ -41,11 +59,19 @@ export function createReleaseRouter() {
 				}
 
 				// Get release (with optional package filter)
-				const wnf = await releaseService.getLatestReleaseWNF(
+				let wnf = await releaseService.getLatestReleaseWNF(
 					owner,
 					repo,
 					packageName,
 				);
+
+				// Apply category filter if specified
+				if (filterParam && filterParam !== "all") {
+					wnf = {
+						...wnf,
+						categories: filterCategories(wnf.categories, filterParam),
+					};
+				}
 
 				return c.json(wnf);
 			} catch (error) {

@@ -3,7 +3,12 @@
  */
 
 import { ReleaseService } from "@whatsnew/core";
-import type { WNFAggregatedDocument, WNFDocument } from "@whatsnew/types";
+import { filterCategories } from "@whatsnew/parsers";
+import type {
+	CategoryFilter,
+	WNFAggregatedDocument,
+	WNFDocument,
+} from "@whatsnew/types";
 import { type ParsedArgs, parseArgs, parseTarget } from "./args.js";
 import { runConfigCommand } from "./commands/config.js";
 import {
@@ -46,6 +51,10 @@ ${colors.bold("ARGUMENTS")}
 ${colors.bold("RANGE OPTIONS")} ${colors.dim("(auto-detects date vs version)")}
   --since, --from <value>            Starting point (e.g., v3.0.0 or 2024-06)
   --until, --to <value>              Ending point (default: latest/today)
+
+${colors.bold("FILTER OPTIONS")}
+  --important, -i                    Show only important changes (breaking, security, features, fixes, perf)
+  --filter <type>                    Filter by type: important, maintenance, all (default)
 
 ${colors.bold("OTHER OPTIONS")}
   --package, -p <name>               Filter monorepo by package name
@@ -181,9 +190,41 @@ export async function run(argv: string[]): Promise<void> {
 		result = await service.getLatestReleaseWNF(owner, repoName, args.package);
 	}
 
+	// Apply category filter if specified
+	if (args.filter && args.filter !== "all") {
+		result = applyFilter(result, args.filter);
+	}
+
 	// Format and output
 	const output = format(result, args.format as FormatType);
 	console.log(output);
+}
+
+/**
+ * Apply category filter to WNF result
+ */
+function applyFilter(
+	doc: WNFDocument | WNFAggregatedDocument,
+	filter: Exclude<CategoryFilter, "all">,
+): WNFDocument | WNFAggregatedDocument {
+	if ("packages" in doc) {
+		// Aggregated document - filter each package's categories
+		return {
+			...doc,
+			packages: doc.packages
+				.map((pkg) => ({
+					...pkg,
+					categories: filterCategories(pkg.categories, filter),
+				}))
+				.filter((pkg) => pkg.categories.length > 0),
+		};
+	}
+
+	// Single release document
+	return {
+		...doc,
+		categories: filterCategories(doc.categories, filter),
+	};
 }
 
 /**

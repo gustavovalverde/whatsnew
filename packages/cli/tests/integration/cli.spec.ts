@@ -71,6 +71,25 @@ describe("CLI Integration", () => {
 			expect(result.success).toBe(false);
 			expect(result.output).toContain("Invalid format");
 		});
+
+		it("fails with invalid filter option", () => {
+			const result = runCLI(["owner/repo", "--filter", "invalid"]);
+
+			expect(result.success).toBe(false);
+			expect(result.output).toContain("Invalid filter");
+		});
+	});
+
+	describe("filter options in help", () => {
+		it("shows filter options in help text", () => {
+			const result = runCLI(["--help"]);
+
+			expect(result.success).toBe(true);
+			expect(result.stdout).toContain("FILTER OPTIONS");
+			expect(result.stdout).toContain("--important");
+			expect(result.stdout).toContain("-i");
+			expect(result.stdout).toContain("--filter");
+		});
 	});
 
 	describe("config commands", () => {
@@ -343,6 +362,47 @@ describe("CLI Integration (with network)", () => {
 
 			const data = JSON.parse(result.stdout);
 			expect(data.version).toContain("18.2");
+		});
+
+		it("filters to important categories with --important flag", () => {
+			const result = runCLI(["vercel/ai", "--format", "json", "--important"], {
+				timeout: 30000,
+			});
+
+			expect(result.success).toBe(true);
+
+			const data = JSON.parse(result.stdout);
+			expect(data.spec).toBe("wnf/0.1");
+
+			// Verify only important categories are present (or maintenance with breaking items)
+			const maintenanceCategories = [
+				"deps",
+				"refactor",
+				"chore",
+				"docs",
+				"other",
+			];
+
+			// All returned categories should be important (or contain breaking items)
+			for (const category of data.categories) {
+				if (maintenanceCategories.includes(category.id)) {
+					// If a maintenance category is returned, it should only have breaking items
+					for (const item of category.items) {
+						expect(item.breaking).toBe(true);
+					}
+				}
+			}
+		});
+
+		it("filters to important categories with -i shorthand", () => {
+			const result = runCLI(["vercel/ai", "--format", "json", "-i"], {
+				timeout: 30000,
+			});
+
+			expect(result.success).toBe(true);
+
+			const data = JSON.parse(result.stdout);
+			expect(data.spec).toBe("wnf/0.1");
 		});
 	});
 });
