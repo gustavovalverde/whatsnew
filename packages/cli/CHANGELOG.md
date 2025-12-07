@@ -1,5 +1,12 @@
 # @whatsnew/cli
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [4fe0f52]
+  - @whatsnew/core@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

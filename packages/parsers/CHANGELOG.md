@@ -1,5 +1,29 @@
 # @whatsnew/parsers
 
+## 0.3.2
+
+### Patch Changes
+
+- daacbad: Support extended changesets format used by shadcn-ui and similar projects
+
+  The extractor now handles changesets with PR links, commit URLs, and "Thanks" messages:
+
+  ```
+  -   [#PR](url) [`commit`](url) Thanks [@author](url)! - message
+  ```
+
+- 4fe0f52: Fix scope and refs duplication in formatted output
+
+  Extractors were embedding structured data (scope, refs) in the text field,
+  causing output like: `[ www] ** www**: minor updates (#5749) (5749)`
+
+  - Add `stripTrailingRefs()` utility to clean text fields
+  - Fix all extractors to properly separate text from metadata
+  - Trim scope whitespace (e.g., `feat( www):` → scope: `www`)
+
+- Updated dependencies [4fe0f52]
+  - @whatsnew/utils@0.1.5
+
 ## 0.3.1
 
 ### Patch Changes
