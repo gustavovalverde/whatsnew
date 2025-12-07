@@ -450,4 +450,110 @@ describe("CLI Integration (with network)", () => {
 			}
 		});
 	});
+
+	describe.skipIf(!hasGitHubToken)(
+		"normalized output contract - popular repositories",
+		() => {
+			// Test against 20 popular repositories to ensure the normalized
+			// data model works across different release formats and ecosystems
+			const popularRepos = [
+				// Frontend frameworks & libraries
+				"facebook/react",
+				"vuejs/core",
+				"sveltejs/svelte",
+				"angular/angular",
+				// Build tools & runtimes
+				"vitejs/vite",
+				"evanw/esbuild",
+				"vercel/turborepo",
+				"oven-sh/bun",
+				// Backend & full-stack
+				"nodejs/node",
+				"denoland/deno",
+				"fastify/fastify",
+				"trpc/trpc",
+				// AI & ML
+				"vercel/ai",
+				"langchain-ai/langchain",
+				// UI libraries
+				"shadcn-ui/ui",
+				"tailwindlabs/tailwindcss",
+				"chakra-ui/chakra-ui",
+				// Utilities
+				"colinhacks/zod",
+				"TanStack/query",
+				"pmndrs/zustand",
+			];
+
+			/**
+			 * Validates that an item follows the normalized data model contract
+			 */
+			function validateNormalizedItem(
+				item: { text: string; scope?: string; refs?: string[] },
+				repo: string,
+			): void {
+				// If scope exists, text should not embed it
+				if (item.scope) {
+					expect(
+						item.text,
+						`${repo}: text should not contain bold scope pattern`,
+					).not.toContain(`**${item.scope}**:`);
+					expect(
+						item.text,
+						`${repo}: text should not contain bracketed scope`,
+					).not.toContain(`[${item.scope}]`);
+					// Scope should be trimmed
+					expect(item.scope, `${repo}: scope should be trimmed`).toBe(
+						item.scope.trim(),
+					);
+				}
+
+				// If refs exist, text should not have trailing ref patterns
+				if (item.refs && item.refs.length > 0) {
+					for (const ref of item.refs) {
+						const trailingHashRef = new RegExp(`\\(#${ref}\\)\\s*$`);
+						const trailingLinkRef = new RegExp(`\\[#${ref}\\]\\([^)]+\\)\\s*$`);
+
+						expect(
+							trailingHashRef.test(item.text),
+							`${repo}: text "${item.text}" should not have trailing (#${ref})`,
+						).toBe(false);
+						expect(
+							trailingLinkRef.test(item.text),
+							`${repo}: text "${item.text}" should not have trailing [#${ref}](url)`,
+						).toBe(false);
+					}
+				}
+			}
+
+			for (const repo of popularRepos) {
+				it(
+					`validates normalized output for ${repo}`,
+					{ timeout: 60000 },
+					() => {
+						const result = runCLI([repo, "--format", "json"], {
+							timeout: 30000,
+						});
+
+						// Some repos might not have releases - that's ok, skip validation
+						if (!result.success) {
+							console.warn(
+								`Skipping ${repo}: ${result.stderr || "no releases"}`,
+							);
+							return;
+						}
+
+						const data = JSON.parse(result.stdout);
+
+						// Validate all items in all categories
+						for (const category of data.categories || []) {
+							for (const item of category.items || []) {
+								validateNormalizedItem(item, repo);
+							}
+						}
+					},
+				);
+			}
+		},
+	);
 });

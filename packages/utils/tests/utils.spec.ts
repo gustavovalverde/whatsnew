@@ -142,6 +142,22 @@ describe("stripTrailingRefs", () => {
 	it("handles whitespace around trailing refs", () => {
 		expect(stripTrailingRefs("Add feature  (#123)  ")).toBe("Add feature");
 	});
+
+	it("strips multiple consecutive trailing refs (#123) (#456)", () => {
+		expect(
+			stripTrailingRefs(
+				"fix(core): prevent infinite recursion (#5089) (#5094)",
+			),
+		).toBe("fix(core): prevent infinite recursion");
+	});
+
+	it("strips multiple trailing refs with different formats", () => {
+		expect(
+			stripTrailingRefs(
+				"Update feature (#123) [#456](https://github.com/org/repo/pull/456)",
+			),
+		).toBe("Update feature");
+	});
 });
 
 describe("extractVersion", () => {
