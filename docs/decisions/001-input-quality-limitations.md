@@ -351,6 +351,14 @@ This combination:
 - AI enrichment as opt-in premium feature
 - User configurable quality thresholds
 
+## Related ADRs
+
+- [ADR-002: Filter Version Tag Commits](./002-version-tag-commit-filtering.md) - Different issue: automated release commits
+
+**Important distinction:**
+- **ADR-001 (this)**: Terse *developer* commits ("fix", "lint") - solved with quality scoring
+- **ADR-002**: Automated *version tag* commits ("v1.2.3") - solved with filtering
+
 ## More Information
 
 - [Multi-Source Strategy](../architecture/multi-source-strategy.md)

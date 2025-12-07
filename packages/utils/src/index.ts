@@ -27,6 +27,22 @@ export {
 	extractRefs,
 	stripTrailingRefs,
 } from "./extract-refs.js";
+// Item quality scoring
+export {
+	type AggregateQualityResult,
+	type CompositeConfidenceResult,
+	calculateAggregateQuality,
+	calculateCategorizationConfidence,
+	calculateCompleteness,
+	calculateCompositeConfidence,
+	calculateContentScore,
+	calculateItemQuality,
+	calculateStructuralScore,
+	hasActionVerb,
+	type ItemQualityResult,
+	isBareConventional,
+	isGenericOnly,
+} from "./item-quality.js";
 // Item validation
 export {
 	isContributorAcknowledgment,

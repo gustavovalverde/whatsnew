@@ -47,6 +47,14 @@ export const SourceSchema = z.object({
 		.optional(),
 });
 
+export const ConfidenceBreakdownSchema = z.object({
+	composite: z.number().min(0).max(1),
+	structural: z.number().min(0).max(1),
+	quality: z.number().min(0).max(1),
+	terseRatio: z.number().min(0).max(1),
+	itemCount: z.number().int().min(0),
+});
+
 export const WNFDocumentSchema = z.object({
 	spec: z.literal("wnf/0.1"),
 	source: SourceSchema,
@@ -61,6 +69,8 @@ export const WNFDocumentSchema = z.object({
 		changelog: z.string().url().optional(),
 	}),
 	confidence: z.number().min(0).max(1),
+	/** Detailed confidence breakdown (when available) */
+	confidenceBreakdown: ConfidenceBreakdownSchema.optional(),
 	generatedFrom: z.array(z.string()),
 	generatedAt: z.string().datetime().optional(),
 });
@@ -386,11 +396,32 @@ export interface PlatformClient {
 }
 
 /**
+ * Confidence breakdown with quality metrics
+ *
+ * @see https://elsevier.blog/composite-scores/ - Composite score methodology
+ * @see docs/decisions/001-input-quality-limitations.md - ADR for this implementation
+ */
+export interface ConfidenceBreakdown {
+	/** Final composite confidence score (0-1) */
+	composite: number;
+	/** Structural accuracy dimension (0-1) - format recognition */
+	structural: number;
+	/** Content quality dimension (0-1) - item meaningfulness */
+	quality: number;
+	/** Ratio of terse items (0-1) - for display purposes */
+	terseRatio: number;
+	/** Count of items analyzed */
+	itemCount: number;
+}
+
+/**
  * Data source result from multi-source aggregation
  */
 export interface SourceResult {
 	categories: Category[];
 	confidence: number;
+	/** Detailed confidence breakdown (when available) */
+	confidenceBreakdown?: ConfidenceBreakdown;
 	source: string;
 	metadata?: {
 		version?: string;

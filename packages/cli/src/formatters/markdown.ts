@@ -131,5 +131,17 @@ export function formatMarkdown(
 		`_Confidence: ${Math.round(doc.confidence * 100)}% | Sources: ${doc.generatedFrom.join(", ")}_`,
 	);
 
+	// Show quality warning when terseRatio exceeds threshold (20%)
+	// This indicates many items have minimal descriptions (< 15 chars)
+	const breakdown =
+		"confidenceBreakdown" in doc ? doc.confidenceBreakdown : undefined;
+	if (breakdown && breakdown.terseRatio > 0.2) {
+		const tersePercent = Math.round(breakdown.terseRatio * 100);
+		lines.push("");
+		lines.push(
+			`> ⚠️ **Note:** ${tersePercent}% of entries have minimal descriptions`,
+		);
+	}
+
 	return lines.join("\n");
 }

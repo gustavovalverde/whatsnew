@@ -1,4 +1,9 @@
-import type { SourceResult, WNFDocument } from "@whatsnew/types";
+import type {
+	ConfidenceBreakdown,
+	SourceResult,
+	WNFDocument,
+} from "@whatsnew/types";
+import { calculateCompositeConfidence } from "@whatsnew/utils";
 import { AIExtractor } from "../ai/ai-extractor.js";
 import { QualityAssessor } from "../ai/quality-assessor.js";
 import type { AIConfig } from "../ai/types.js";
@@ -127,6 +132,12 @@ export class DataAggregator {
 
 	/**
 	 * Convert SourceResult to WNFDocument
+	 *
+	 * Calculates composite confidence score using the mathematical quality model.
+	 * This adjusts the format-based confidence to reflect actual content quality.
+	 *
+	 * @see https://elsevier.blog/composite-scores/ - Composite score methodology
+	 * @see docs/decisions/001-input-quality-limitations.md - ADR for this implementation
 	 */
 	private toWNFDocument(
 		result: SourceResult,
@@ -139,6 +150,35 @@ export class DataAggregator {
 		const version =
 			result.metadata?.version || tag?.replace(/^v/, "") || "unknown";
 		const summary = buildCategorySummary(result.categories);
+
+		// Extract items for quality scoring
+		// Flatten all categories into items with their metadata
+		const items = result.categories.flatMap((category) =>
+			category.items.map((item) => ({
+				text: item.text,
+				// Extract conventional type from text if present
+				conventionalType: this.extractConventionalType(item.text),
+				scope: item.scope,
+				refs: item.refs,
+			})),
+		);
+
+		// Calculate composite confidence using the mathematical quality model
+		// This adjusts format-based confidence to reflect actual content quality
+		const confidenceResult = calculateCompositeConfidence(
+			result.confidence, // Format-based confidence from parser
+			items,
+			items.length, // Estimated count = actual count
+		);
+
+		// Build confidence breakdown for transparency
+		const confidenceBreakdown: ConfidenceBreakdown = {
+			composite: confidenceResult.composite,
+			structural: confidenceResult.structural,
+			quality: confidenceResult.quality,
+			terseRatio: confidenceResult.metrics.terseRatio,
+			itemCount: confidenceResult.metrics.itemCount,
+		};
 
 		const doc: WNFDocument = {
 			spec: "wnf/0.1",
@@ -155,7 +195,9 @@ export class DataAggregator {
 				release: `https://github.com/${owner}/${repo}/releases/tag/${tag || version}`,
 				compare: result.metadata?.compareUrl,
 			},
-			confidence: result.confidence,
+			// Use composite confidence instead of format-only confidence
+			confidence: confidenceResult.composite,
+			confidenceBreakdown,
 			generatedFrom: sourcesUsed,
 			generatedAt: new Date().toISOString(),
 		};
@@ -166,5 +208,17 @@ export class DataAggregator {
 		}
 
 		return doc;
+	}
+
+	/**
+	 * Extract conventional commit type from item text if present
+	 *
+	 * Looks for patterns like "feat:", "fix(scope):", etc. at the start of text.
+	 */
+	private extractConventionalType(text: string): string | undefined {
+		const match = text.match(
+			/^(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(?:\([^)]+\))?!?:/i,
+		);
+		return match ? match[1].toLowerCase() : undefined;
 	}
 }

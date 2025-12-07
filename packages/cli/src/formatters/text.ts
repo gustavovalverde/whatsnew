@@ -145,6 +145,14 @@ function formatCategories(categories: Category[]): string {
 	return lines.join("\n");
 }
 
+/**
+ * Threshold for displaying quality warning.
+ * When more than 20% of items are terse (< 15 chars), show a quality note.
+ *
+ * @see packages/utils/src/item-quality.ts for TERSE_PENALTY_THRESHOLD
+ */
+const TERSE_WARNING_THRESHOLD = 0.2;
+
 function formatFooter(doc: WNFDocument | WNFAggregatedDocument): string {
 	const width = 60;
 	const confidence = Math.round(doc.confidence * 100);
@@ -153,17 +161,37 @@ function formatFooter(doc: WNFDocument | WNFAggregatedDocument): string {
 	const footer = `Confidence: ${confidence}% | Sources: ${sources}`;
 	const paddedFooter = ` ${footer} `.slice(0, width - 2).padEnd(width - 2);
 
-	return [
+	const lines = [
 		colors.dim(
 			`${box.teeRight}${box.horizontal.repeat(width - 2)}${box.teeLeft}`,
 		),
 		colors.dim(box.vertical) +
 			colors.dim(paddedFooter) +
 			colors.dim(box.vertical),
+	];
+
+	// Show quality warning when terseRatio exceeds threshold
+	// This indicates many items have minimal descriptions (< 15 chars)
+	const breakdown =
+		"confidenceBreakdown" in doc ? doc.confidenceBreakdown : undefined;
+	if (breakdown && breakdown.terseRatio > TERSE_WARNING_THRESHOLD) {
+		const tersePercent = Math.round(breakdown.terseRatio * 100);
+		const qualityNote = `Note: ${tersePercent}% of entries have minimal descriptions`;
+		const paddedNote = ` ${qualityNote} `.slice(0, width - 2).padEnd(width - 2);
+		lines.push(
+			colors.dim(box.vertical) +
+				colors.yellow(paddedNote) +
+				colors.dim(box.vertical),
+		);
+	}
+
+	lines.push(
 		colors.dim(
 			`${box.bottomLeft}${box.horizontal.repeat(width - 2)}${box.bottomRight}`,
 		),
-	].join("\n");
+	);
+
+	return lines.join("\n");
 }
 
 /**
