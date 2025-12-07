@@ -18,7 +18,7 @@
 
 ```bash
 # Check what's new in a GitHub repo
-npx @whatsnew/cli vercel/ai
+npx @whatsnew/cli@latest vercel/ai
 
 # Check what changed since a version
 whatsnew facebook/react --since v18.2.0
@@ -50,8 +50,8 @@ pnpm add -g @whatsnew/cli
 # bun
 bun add -g @whatsnew/cli
 
-# Or run directly with npx
-npx @whatsnew/cli vercel/ai
+# Or run directly with npx (use @latest to avoid caching issues)
+npx @whatsnew/cli@latest vercel/ai
 ```
 
 ### Homebrew
@@ -88,7 +88,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Show dependency changes
-        run: npx @whatsnew/cli vercel/ai --since v3.0.0 --format markdown >> $GITHUB_STEP_SUMMARY
+        run: npx @whatsnew/cli@latest vercel/ai --since v3.0.0 --format markdown >> $GITHUB_STEP_SUMMARY
 ```
 
 ## How It Works
