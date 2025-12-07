@@ -49,6 +49,7 @@ export const CATEGORY_SIGNALS: Record<CategoryId, string[]> = {
 	],
 	fixes: [
 		"fix",
+		"fixes",
 		"fixed",
 		"fixing",
 		"resolve",

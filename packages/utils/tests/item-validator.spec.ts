@@ -59,6 +59,13 @@ describe("validateChangelogItem", () => {
 			expect(validateChangelogItem("v1.2.3-alpha.1").valid).toBe(false);
 		});
 
+		it("rejects version commit messages", () => {
+			expect(validateChangelogItem("Version 19.2.1").valid).toBe(false);
+			expect(validateChangelogItem("Version 1.0.0").valid).toBe(false);
+			expect(validateChangelogItem("version v2.3.4").valid).toBe(false);
+			expect(validateChangelogItem("Version 1.2.3-beta.1").valid).toBe(false);
+		});
+
 		it("rejects empty or whitespace", () => {
 			expect(validateChangelogItem("").valid).toBe(false);
 			expect(validateChangelogItem("   ").valid).toBe(false);

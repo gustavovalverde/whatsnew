@@ -2,6 +2,7 @@
  * Phase 2: Augment with commit history
  */
 
+import { CATEGORY_PRIORITY } from "@whatsnew/parsers";
 import type { SourceResult } from "@whatsnew/types";
 import { normalizeForDeduplication } from "@whatsnew/utils";
 import type { DataSource } from "../../sources/index.js";
@@ -108,9 +109,16 @@ export function mergeWithCommits(
 		}
 	}
 
+	// Sort categories by priority order
+	const sortedCategories = Array.from(categoryMap.values()).sort((a, b) => {
+		const aIndex = CATEGORY_PRIORITY.indexOf(a.id);
+		const bIndex = CATEGORY_PRIORITY.indexOf(b.id);
+		return aIndex - bIndex;
+	});
+
 	return {
 		...primary,
-		categories: Array.from(categoryMap.values()),
+		categories: sortedCategories,
 		confidence: Math.max(primary.confidence, commits.confidence),
 		metadata: primary.metadata,
 	};

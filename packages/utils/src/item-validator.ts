@@ -43,6 +43,7 @@ const NOISE_PATTERNS: RegExp[] = [
 
 	// Version-only entries
 	/^v?\d+\.\d+\.\d+(-[\w.]+)?$/, // v1.2.3 or 1.2.3-alpha.1
+	/^Version\s+v?\d+\.\d+\.\d+(-[\w.]+)?$/i, // Version 1.2.3
 
 	// Empty or whitespace-only
 	/^\s*$/,
