@@ -74,15 +74,18 @@ jobs:
 
       - name: Log published packages
         if: steps.changesets.outputs.published == 'true'
-        run: echo "Published:" && echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | "  - \(.name)@\(.version)"'
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: echo "Published:" && echo "$PUBLISHED_PACKAGES" | jq -r '.[] | "  - \(.name)@\(.version)"'
 
       - name: Trigger binary builds for CLI releases
         if: steps.changesets.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: |
           # Extract CLI package releases and trigger binary builds
-          echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | select(.name == "@whatsnew/cli") | "@whatsnew/cli@\(.version)"' | while read -r tag; do
+          echo "$PUBLISHED_PACKAGES" | jq -r '.[] | select(.name == "@whatsnew/cli") | "@whatsnew/cli@\(.version)"' | while read -r tag; do
             echo "Triggering build-binaries for: $tag"
             gh workflow run build-binaries.yml --ref main -f tag="$tag"
           done
