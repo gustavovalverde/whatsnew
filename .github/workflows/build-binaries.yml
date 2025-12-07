@@ -1,3 +1,12 @@
+# Build Binaries Workflow (Step 2 of 2)
+#
+# Trigger: GitHub release published (from release.yml) or manual dispatch
+#
+# Jobs:
+#   1. build:           Compile binaries for all platforms (parallel matrix)
+#   2. publish:         Upload binaries + checksums to GitHub release
+#   3. update-homebrew: Update formula with SHA256s (only for @whatsnew/cli@ tags)
+
 name: Build Binaries
 
 on:
@@ -105,8 +114,14 @@ jobs:
           path: binaries
           merge-multiple: true
 
-      - name: List artifacts
-        run: ls -la binaries/
+      - name: Verify checksums exist
+        run: |
+          cd binaries && ls -la
+          # Every binary must have a matching .sha256 file
+          for f in whatsnew-*; do
+            case "$f" in *.sha256) continue ;; esac
+            [ -f "$f.sha256" ] || { echo "::error::Missing checksum for $f"; exit 1; }
+          done
 
       - name: Publish to GitHub Release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
@@ -114,3 +129,62 @@ jobs:
           files: binaries/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create job summary
+        run: |
+          echo "## Binaries published" >> $GITHUB_STEP_SUMMARY
+          ls binaries/ | grep -v '\.sha256$' | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
+
+  update-homebrew:
+    name: Update Homebrew Formula
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, '@whatsnew/cli@')
+    needs: publish
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+        with:
+          bun-version: "1.3.1"
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#@whatsnew/cli@}" >> $GITHUB_OUTPUT
+
+      - name: Update Homebrew formula
+        run: bun run scripts/update-homebrew-formula.ts ${{ steps.version.outputs.version }}
+
+      - name: Validate formula
+        run: |
+          # Check no placeholders remain
+          if grep -q 'PLACEHOLDER_' HomebrewFormula/whatsnew.rb; then
+            echo "Error: Placeholders not replaced in formula"
+            exit 1
+          fi
+
+          # Verify all SHA256 values are valid (64 lowercase hex chars)
+          sha256_count=$(grep -oE 'sha256 "[a-f0-9]{64}"' HomebrewFormula/whatsnew.rb | wc -l)
+          if [ "$sha256_count" -lt 4 ]; then
+            echo "Error: Expected 4 SHA256 values, found $sha256_count"
+            exit 1
+          fi
+
+          # Check Ruby syntax
+          ruby -c HomebrewFormula/whatsnew.rb
+
+          echo "Formula validation passed"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add HomebrewFormula/whatsnew.rb
+          git diff --staged --quiet || git commit -m "chore(homebrew): update formula for v${{ steps.version.outputs.version }}"
+          git push
