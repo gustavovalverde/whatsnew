@@ -8,9 +8,10 @@
 #   3. update-homebrew: Update formula with SHA256s (only for @whatsnew/cli@ tags)
 #
 # Local testing:
-#   bun run build && bun build --compile packages/cli/bin/whatsnew.ts --outfile whatsnew
+#   bun run build
+#   VERSION=$(node -p "require('./packages/cli/package.json').version")
+#   bun build --compile packages/cli/bin/whatsnew.ts --outfile whatsnew --define "__VERSION__='$VERSION'"
 #   ./whatsnew --version
-#   shasum -a 256 whatsnew
 
 name: Build Binaries
 
@@ -75,7 +76,9 @@ jobs:
         run: bun run build
 
       - name: Build binary
-        run: bun build --compile --target=${{ matrix.target }} packages/cli/bin/whatsnew.ts --outfile ${{ matrix.artifact }}
+        run: |
+          VERSION=$(node -p "require('./packages/cli/package.json').version")
+          bun build --compile --target=${{ matrix.target }} packages/cli/bin/whatsnew.ts --outfile ${{ matrix.artifact }} --define "__VERSION__='$VERSION'"
 
       - name: Test binary (Unix)
         if: runner.os != 'Windows'

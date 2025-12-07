@@ -20,7 +20,7 @@
 	],
 	"scripts": {
 		"build": "tsc && bun run build:bin",
-		"build:bin": "bun build bin/whatsnew.ts --outfile bin/whatsnew.js --target node --banner '#!/usr/bin/env node'",
+		"build:bin": "bun build bin/whatsnew.ts --outfile bin/whatsnew.js --target node --banner '#!/usr/bin/env node' --define \"__VERSION__='$(node -p \"require('./package.json').version\")'\"",
 		"dev": "tsc --watch",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",

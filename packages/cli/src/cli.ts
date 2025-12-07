@@ -16,7 +16,19 @@ import { parseRange, type RangeQuery } from "./range-parser.js";
 import { colors } from "./utils/colors.js";
 import { CLIError } from "./utils/errors.js";
 
-const VERSION = "0.1.0";
+// Injected at build time via --define, with runtime fallback for dev/test
+declare const __VERSION__: string;
+const VERSION = (() => {
+	if (typeof __VERSION__ !== "undefined") return __VERSION__;
+	try {
+		// Fallback for dev/test: read from package.json
+		const { createRequire } = require("node:module");
+		const req = createRequire(import.meta.url);
+		return req("../package.json").version;
+	} catch {
+		return "dev";
+	}
+})();
 
 function getHelpText(): string {
 	return `
