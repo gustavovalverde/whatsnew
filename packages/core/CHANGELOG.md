@@ -1,5 +1,13 @@
 # @whatsnew/core
 
+## 0.3.0
+
+### Patch Changes
+
+- Updated dependencies [4431853]
+  - @whatsnew/types@0.3.0
+  - @whatsnew/parsers@0.3.0
+
 ## 0.1.2
 
 ### Patch Changes
