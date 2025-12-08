@@ -7,46 +7,9 @@
  * @see https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
  */
 
-import type {
-	CategoryId,
-	ExtractedItem,
-	ExtractedRelease,
-} from "@whatsnew/types";
+import type { ExtractedItem, ExtractedRelease } from "@whatsnew/types";
 import { stripTrailingRefs } from "@whatsnew/utils";
-
-/**
- * Maps GitHub auto-generated category titles to suggested categories
- */
-const GITHUB_CATEGORY_MAP: Record<string, CategoryId> = {
-	features: "features",
-	"new features": "features",
-	"exciting new features": "features",
-	enhancements: "features",
-	enhancement: "features",
-	"bug fixes": "fixes",
-	"bug fix": "fixes",
-	bugfixes: "fixes",
-	fixes: "fixes",
-	fixed: "fixes",
-	"breaking changes": "breaking",
-	breaking: "breaking",
-	security: "security",
-	"security fixes": "security",
-	documentation: "docs",
-	docs: "docs",
-	dependencies: "deps",
-	"dependency updates": "deps",
-	performance: "perf",
-	"performance improvements": "perf",
-	refactoring: "refactor",
-	refactor: "refactor",
-	chore: "chore",
-	chores: "chore",
-	maintenance: "chore",
-	other: "other",
-	"other changes": "other",
-	changes: "other",
-};
+import { mapSectionToCategory } from "../categorizer/index.js";
 
 /**
  * Extracts items from GitHub auto-generated release notes.
@@ -140,12 +103,8 @@ function extractSummary(body: string): string | undefined {
 function parseEntries(lines: string[], sectionTitle: string): ExtractedItem[] {
 	const items: ExtractedItem[] = [];
 
-	// Normalize section title for category suggestion
-	const normalizedTitle = sectionTitle
-		.toLowerCase()
-		.replace(/[\p{Emoji}]/gu, "")
-		.trim();
-	const suggestedCategory = GITHUB_CATEGORY_MAP[normalizedTitle] || "other";
+	// Use shared section mapping for category suggestion
+	const suggestedCategory = mapSectionToCategory(sectionTitle);
 
 	// Match: * Title by @author in URL
 	const entryRegex =

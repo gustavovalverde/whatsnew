@@ -66,8 +66,10 @@ export function normalizeForComparison(text: string, maxLength = 50): string {
  * Normalizes changelog item text for deduplication
  *
  * Specialized normalization for changelog entries that:
+ * - Removes leading PR/issue prefixes like `#1234 - ` or `#1234: `
  * - Removes markdown bold scope prefixes like `**scope**:`
  * - Removes trailing PR/issue references like `(#123)`
+ * - Removes author attributions like `, by @username` or `by @username`
  * - Removes markdown links `[text](url)`
  * - Converts to lowercase and normalizes whitespace
  * - Truncates to first 100 chars for comparison
@@ -79,6 +81,9 @@ export function normalizeForComparison(text: string, maxLength = 50): string {
  * normalizeForDeduplication("**auth**: Add OAuth support (#1234)");
  * // Returns: "add oauth support"
  *
+ * normalizeForDeduplication("#1242 - fix Inertia adapter, by @gustavovalverde");
+ * // Returns: "fix inertia adapter"
+ *
  * normalizeForDeduplication("See [docs](https://example.com) for more");
  * // Returns: "see for more"
  * ```
@@ -86,8 +91,10 @@ export function normalizeForComparison(text: string, maxLength = 50): string {
 export function normalizeForDeduplication(text: string): string {
 	return text
 		.toLowerCase()
+		.replace(/^#\d+\s*[-:]\s*/, "") // Remove leading #1234 - or #1234:
 		.replace(/^\*\*[^*]+\*\*:\s*/, "") // Remove **scope**: prefix
-		.replace(/\s*\(#\d+\)\s*$/, "") // Remove trailing (#123)
+		.replace(/,?\s*by\s+@[\w-]+/gi, "") // Remove ", by @author" or "by @author"
+		.replace(/\s*\((?:closes|fixes|resolves)?\s*#\d+\)\s*$/i, "") // Remove trailing (#123), (closes #123), etc.
 		.replace(/\[[^\]]+\]\([^)]+\)/g, "") // Remove markdown links
 		.replace(/\s+/g, " ")
 		.trim()

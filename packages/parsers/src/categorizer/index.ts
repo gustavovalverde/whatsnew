@@ -22,12 +22,15 @@ export {
 
 // Keyword analysis
 export { analyzeKeywords } from "./keywords.js";
-
 // Constants
+// Section mapping utilities
 export {
 	CATEGORY_PRIORITY,
 	CATEGORY_SIGNALS,
 	CATEGORY_TITLES,
 	CONVENTIONAL_COMMIT_MAP,
 	KEYWORD_THRESHOLD,
+	mapSectionToCategory,
+	normalizeSectionName,
+	SECTION_TO_CATEGORY_MAP,
 } from "./signals.js";

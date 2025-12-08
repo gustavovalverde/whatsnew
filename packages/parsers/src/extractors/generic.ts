@@ -12,6 +12,7 @@ import {
 	stripTrailingRefs,
 	validateChangelogItem,
 } from "@whatsnew/utils";
+import { mapSectionToCategory } from "../categorizer/index.js";
 
 /**
  * Extracts items from generic/unstructured release text.
@@ -104,7 +105,7 @@ function createValidatedItem(
 		refs,
 		sourceHint: {
 			section,
-			suggestedCategory: "other",
+			suggestedCategory: mapSectionToCategory(section),
 		},
 		score: validation.score,
 	};

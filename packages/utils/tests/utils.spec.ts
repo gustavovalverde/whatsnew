@@ -12,6 +12,7 @@ import {
 	isMajorSection,
 	isMonorepoTag,
 	normalizeForComparison,
+	normalizeForDeduplication,
 	normalizeLineEndings,
 	normalizeWhitespace,
 	parseVersion,
@@ -59,6 +60,80 @@ describe("normalizeForComparison", () => {
 		expect(normalizeForComparison("this is a long text", 10)).toBe(
 			"this is a ",
 		);
+	});
+});
+
+describe("normalizeForDeduplication", () => {
+	it("removes leading #1234 - prefix", () => {
+		expect(normalizeForDeduplication("#1242 - fix Inertia adapter")).toBe(
+			"fix inertia adapter",
+		);
+	});
+
+	it("removes leading #1234: prefix", () => {
+		expect(normalizeForDeduplication("#123: Add new feature")).toBe(
+			"add new feature",
+		);
+	});
+
+	it("removes , by @author suffix", () => {
+		expect(
+			normalizeForDeduplication("fix Inertia adapter, by @kapishdima"),
+		).toBe("fix inertia adapter");
+	});
+
+	it("removes by @author suffix without comma", () => {
+		expect(normalizeForDeduplication("fix Inertia adapter by @user123")).toBe(
+			"fix inertia adapter",
+		);
+	});
+
+	it("handles combined prefix and suffix patterns", () => {
+		expect(
+			normalizeForDeduplication("#1242 - fix Inertia adapter, by @kapishdima"),
+		).toBe("fix inertia adapter");
+	});
+
+	it("removes **scope**: prefix", () => {
+		expect(normalizeForDeduplication("**auth**: Add OAuth support")).toBe(
+			"add oauth support",
+		);
+	});
+
+	it("removes trailing (#123) pattern", () => {
+		expect(normalizeForDeduplication("Add OAuth support (#1234)")).toBe(
+			"add oauth support",
+		);
+	});
+
+	it("removes markdown links", () => {
+		expect(
+			normalizeForDeduplication("See [docs](https://example.com) for more"),
+		).toBe("see for more");
+	});
+
+	it("normalizes whitespace and converts to lowercase", () => {
+		expect(normalizeForDeduplication("  Fix   Bug  ")).toBe("fix bug");
+	});
+
+	it("truncates to 100 characters", () => {
+		const longText = "a".repeat(150);
+		expect(normalizeForDeduplication(longText)).toHaveLength(100);
+	});
+
+	it("handles complex real-world example from nuqs", () => {
+		// Release body format
+		const releaseText =
+			"#1250 - forward processUrlSearchParams through the debounce queue, by @franky47 (closes #1249)";
+		// Commit format
+		const commitText =
+			"forward processUrlSearchParams through the debounce queue";
+
+		const normalizedRelease = normalizeForDeduplication(releaseText);
+		const normalizedCommit = normalizeForDeduplication(commitText);
+
+		// Both should normalize to the same thing for deduplication
+		expect(normalizedRelease).toBe(normalizedCommit);
 	});
 });
 

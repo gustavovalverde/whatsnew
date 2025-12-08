@@ -137,3 +137,87 @@ export const CATEGORY_PRIORITY: CategoryId[] = [
  * Minimum keyword score threshold for medium confidence
  */
 export const KEYWORD_THRESHOLD = 1;
+
+/**
+ * Maps common section header names to category IDs.
+ * Used by extractors as a fallback hint when no other signal is available.
+ *
+ * Keys should be lowercase, emoji-stripped versions of section titles.
+ */
+export const SECTION_TO_CATEGORY_MAP: Record<string, CategoryId> = {
+	// Features variations
+	features: "features",
+	"new features": "features",
+	"exciting new features": "features",
+	enhancements: "features",
+	enhancement: "features",
+	added: "features",
+
+	// Fixes variations
+	"bug fixes": "fixes",
+	"bug fix": "fixes",
+	bugfixes: "fixes",
+	fixes: "fixes",
+	fixed: "fixes",
+
+	// Breaking changes
+	"breaking changes": "breaking",
+	breaking: "breaking",
+	removed: "breaking",
+
+	// Security
+	security: "security",
+	"security fixes": "security",
+
+	// Documentation
+	documentation: "docs",
+	docs: "docs",
+
+	// Dependencies
+	dependencies: "deps",
+	"dependency updates": "deps",
+
+	// Performance
+	performance: "perf",
+	"performance improvements": "perf",
+
+	// Refactoring
+	refactoring: "refactor",
+	refactor: "refactor",
+
+	// Chores/maintenance
+	chore: "chore",
+	chores: "chore",
+	maintenance: "chore",
+
+	// Other/misc
+	other: "other",
+	"other changes": "other",
+	changes: "other",
+	miscellaneous: "other",
+	misc: "other",
+};
+
+/**
+ * Normalizes a section header name for lookup in SECTION_TO_CATEGORY_MAP.
+ *
+ * @param sectionName - The raw section header name
+ * @returns Normalized lowercase name with emojis stripped
+ */
+export function normalizeSectionName(sectionName: string): string {
+	return sectionName
+		.toLowerCase()
+		.replace(/[\p{Emoji}]/gu, "")
+		.trim();
+}
+
+/**
+ * Maps a section header name to a suggested category ID.
+ *
+ * @param sectionName - The section header name (e.g., "Bug fixes", "🚀 Features")
+ * @returns The suggested category ID, or "other" if not recognized
+ */
+export function mapSectionToCategory(sectionName: string): CategoryId {
+	const normalized = normalizeSectionName(sectionName);
+	return SECTION_TO_CATEGORY_MAP[normalized] ?? "other";
+}

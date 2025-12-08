@@ -3,6 +3,8 @@ import {
 	analyzeKeywords,
 	categorizeItems,
 	inferItemCategory,
+	mapSectionToCategory,
+	normalizeSectionName,
 } from "../src/categorizer/index.js";
 
 describe("analyzeKeywords", () => {
@@ -114,5 +116,71 @@ describe("categorizeItems", () => {
 
 		expect(features).toBeDefined();
 		expect(features?.items).toHaveLength(1);
+	});
+});
+
+describe("normalizeSectionName", () => {
+	it("converts to lowercase", () => {
+		expect(normalizeSectionName("Bug Fixes")).toBe("bug fixes");
+	});
+
+	it("strips emojis", () => {
+		expect(normalizeSectionName("🚀 Features")).toBe("features");
+		expect(normalizeSectionName("🐛 Bug Fixes")).toBe("bug fixes");
+	});
+
+	it("trims whitespace", () => {
+		expect(normalizeSectionName("  Features  ")).toBe("features");
+	});
+});
+
+describe("mapSectionToCategory", () => {
+	it("maps standard bug fix variations to fixes", () => {
+		expect(mapSectionToCategory("Bug fixes")).toBe("fixes");
+		expect(mapSectionToCategory("Bug Fix")).toBe("fixes");
+		expect(mapSectionToCategory("Bugfixes")).toBe("fixes");
+		expect(mapSectionToCategory("Fixed")).toBe("fixes");
+		expect(mapSectionToCategory("Fixes")).toBe("fixes");
+	});
+
+	it("maps feature variations to features", () => {
+		expect(mapSectionToCategory("Features")).toBe("features");
+		expect(mapSectionToCategory("New Features")).toBe("features");
+		expect(mapSectionToCategory("Enhancements")).toBe("features");
+		expect(mapSectionToCategory("Added")).toBe("features");
+	});
+
+	it("maps breaking change sections to breaking", () => {
+		expect(mapSectionToCategory("Breaking Changes")).toBe("breaking");
+		expect(mapSectionToCategory("Breaking")).toBe("breaking");
+		expect(mapSectionToCategory("Removed")).toBe("breaking");
+	});
+
+	it("maps documentation sections to docs", () => {
+		expect(mapSectionToCategory("Documentation")).toBe("docs");
+		expect(mapSectionToCategory("Docs")).toBe("docs");
+	});
+
+	it("maps dependency sections to deps", () => {
+		expect(mapSectionToCategory("Dependencies")).toBe("deps");
+		expect(mapSectionToCategory("Dependency Updates")).toBe("deps");
+	});
+
+	it("handles emoji prefixes", () => {
+		expect(mapSectionToCategory("🚀 Features")).toBe("features");
+		expect(mapSectionToCategory("🐛 Bug Fixes")).toBe("fixes");
+		expect(mapSectionToCategory("📚 Documentation")).toBe("docs");
+	});
+
+	it("returns other for unrecognized sections", () => {
+		expect(mapSectionToCategory("Random Section")).toBe("other");
+		expect(mapSectionToCategory("Thanks")).toBe("other");
+		expect(mapSectionToCategory("Contributors")).toBe("other");
+	});
+
+	it("handles Other Changes variations", () => {
+		expect(mapSectionToCategory("Other")).toBe("other");
+		expect(mapSectionToCategory("Other Changes")).toBe("other");
+		expect(mapSectionToCategory("Miscellaneous")).toBe("other");
 	});
 });
