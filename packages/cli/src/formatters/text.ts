@@ -8,6 +8,7 @@ import type {
 	WNFAggregatedDocument,
 	WNFDocument,
 } from "@whatsnew/types";
+import type { UnreleasedHint, WNFDocumentWithHint } from "../cli.js";
 import { box, colors } from "../utils/colors.js";
 
 const CATEGORY_COLORS: Record<string, (text: string) => string> = {
@@ -42,7 +43,12 @@ function formatHeader(doc: WNFDocument | WNFAggregatedDocument): string {
 
 	let title: string;
 	if ("version" in doc && doc.version) {
-		title = `${repo} ${doc.version}`;
+		// Handle unreleased version specially
+		if (doc.version === "unreleased") {
+			title = `${repo} (unreleased)`;
+		} else {
+			title = `${repo} ${doc.version}`;
+		}
 	} else if ("releaseCount" in doc) {
 		const pkgCount =
 			"packages" in doc && doc.packages.length > 1
@@ -203,7 +209,20 @@ function isAggregatedDocument(
 	return "packages" in doc && Array.isArray(doc.packages);
 }
 
-export function formatText(doc: WNFDocument | WNFAggregatedDocument): string {
+/**
+ * Format the unreleased hint
+ */
+function formatHint(hint: UnreleasedHint): string {
+	return [
+		"",
+		colors.yellow("Hint: ") + hint.message,
+		colors.dim(`  ${hint.suggestion}`),
+	].join("\n");
+}
+
+export function formatText(
+	doc: WNFDocument | WNFAggregatedDocument | WNFDocumentWithHint,
+): string {
 	const lines: string[] = [];
 
 	lines.push(formatHeader(doc));
@@ -241,6 +260,12 @@ export function formatText(doc: WNFDocument | WNFAggregatedDocument): string {
 	if (doc.summary) {
 		lines.push("");
 		lines.push(colors.dim("Summary: ") + doc.summary);
+	}
+
+	// Add unreleased hint if present
+	const hint = "hint" in doc ? (doc as WNFDocumentWithHint).hint : undefined;
+	if (hint) {
+		lines.push(formatHint(hint));
 	}
 
 	return lines.join("\n");

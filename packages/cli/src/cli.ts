@@ -42,11 +42,16 @@ ${colors.bold("whatsnew")} - See what changed in your dependencies
 ${colors.bold("USAGE")}
   whatsnew <repo>                    Show latest release
   whatsnew <repo>@<version>          Show specific version
+  whatsnew <repo>@HEAD               Show unreleased changes
   whatsnew <repo> --since <value>    Show changes since version or date
   whatsnew config <command>          Manage configuration
 
 ${colors.bold("ARGUMENTS")}
   <repo>                             GitHub repo (owner/repo format)
+
+${colors.bold("UNRELEASED OPTIONS")}
+  --unreleased, -u                   Show changes since last release (HEAD)
+  --include-prerelease               Include pre-releases when finding baseline
 
 ${colors.bold("RANGE OPTIONS")} ${colors.dim("(auto-detects date vs version)")}
   --since, --from <value>            Starting point (e.g., v3.0.0 or 2024-06)
@@ -80,6 +85,14 @@ ${colors.bold("EXAMPLES")}
 
   ${colors.dim("# Specific version")}
   whatsnew vercel/ai@v4.0.0
+
+  ${colors.dim("# Unreleased changes (since last release)")}
+  whatsnew vercel/ai --unreleased
+  whatsnew vercel/ai@HEAD
+  whatsnew vercel/ai@unreleased
+
+  ${colors.dim("# Unreleased including pre-releases as baseline")}
+  whatsnew vercel/ai -u --include-prerelease
 
   ${colors.dim("# Changes since version")}
   whatsnew vercel/ai --since v3.0.0
@@ -147,7 +160,11 @@ export async function run(argv: string[]): Promise<void> {
 
 	// For now, handle one target at a time
 	const target = args.targets[0];
-	const { repo, version: inlineVersion } = parseTarget(target);
+	const {
+		repo,
+		version: inlineVersion,
+		unreleased: targetUnreleased,
+	} = parseTarget(target);
 
 	// Validate repo format
 	if (!repo.includes("/")) {
@@ -173,8 +190,18 @@ export async function run(argv: string[]): Promise<void> {
 
 	let result: WNFDocument | WNFAggregatedDocument;
 
+	// Determine if unreleased mode (from flag or target syntax)
+	const isUnreleasedMode = args.unreleased || targetUnreleased;
+
 	// Determine what to fetch
-	if (inlineVersion) {
+	if (isUnreleasedMode) {
+		// Unreleased mode: get commits since last release
+		const { document } = await service.getUnreleasedChanges(owner, repoName, {
+			includePrerelease: args.includePrerelease,
+			packageFilter: args.package,
+		});
+		result = document;
+	} else if (inlineVersion) {
 		// Specific version: whatsnew vercel/ai@v4.0.0
 		result = await service.getReleaseByTagWNF(owner, repoName, inlineVersion);
 	} else if (args.since || args.until) {
@@ -186,8 +213,8 @@ export async function run(argv: string[]): Promise<void> {
 			result = await service.getLatestReleaseWNF(owner, repoName, args.package);
 		}
 	} else {
-		// Latest release
-		result = await service.getLatestReleaseWNF(owner, repoName, args.package);
+		// Latest release with smart hint
+		result = await fetchLatestWithHint(service, owner, repoName, args);
 	}
 
 	// Apply category filter if specified
@@ -334,4 +361,67 @@ async function fetchRange(
 		until: untilDate,
 		packageFilter: args.package,
 	});
+}
+
+/**
+ * Hint about unreleased commits for stale releases
+ */
+export interface UnreleasedHint {
+	type: "unreleased_commits";
+	message: string;
+	suggestion: string;
+	commitCount: number;
+	daysSinceRelease: number;
+}
+
+/** Extended WNFDocument with optional hint */
+export type WNFDocumentWithHint = WNFDocument & { hint?: UnreleasedHint };
+
+/**
+ * Fetch latest release and add smart hint about unreleased commits
+ * Shows hint when release is older than 30 days
+ */
+async function fetchLatestWithHint(
+	service: ReleaseService,
+	owner: string,
+	repo: string,
+	args: ParsedArgs,
+): Promise<WNFDocumentWithHint> {
+	const result = (await service.getLatestReleaseWNF(
+		owner,
+		repo,
+		args.package,
+	)) as WNFDocumentWithHint;
+
+	// Check for smart hint: release > 30 days old
+	if (result.releasedAt) {
+		const releaseDate = new Date(result.releasedAt);
+		const daysSinceRelease = Math.floor(
+			(Date.now() - releaseDate.getTime()) / (1000 * 60 * 60 * 24),
+		);
+
+		if (daysSinceRelease > 30) {
+			try {
+				const unreleasedCount = await service.getUnreleasedCommitCount(
+					owner,
+					repo,
+					result.source.tag,
+				);
+
+				if (unreleasedCount > 0) {
+					result.hint = {
+						type: "unreleased_commits",
+						message: `${unreleasedCount} commits since this release (${daysSinceRelease} days ago)`,
+						suggestion: `Use --unreleased or ${owner}/${repo}@HEAD to see them`,
+						commitCount: unreleasedCount,
+						daysSinceRelease,
+					};
+				}
+			} catch {
+				// Silently ignore hint errors - it's just a convenience feature
+			}
+		}
+	}
+
+	return result;
 }

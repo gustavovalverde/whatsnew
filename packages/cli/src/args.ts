@@ -24,6 +24,10 @@ export interface ParsedArgs {
 	aiKey?: string;
 	/** Category filter: important, maintenance, or all (default) */
 	filter?: CategoryFilter;
+	/** Show unreleased changes since last release */
+	unreleased: boolean;
+	/** Include pre-releases when determining baseline for unreleased */
+	includePrerelease: boolean;
 }
 
 const FLAG_ALIASES: Record<string, string> = {
@@ -34,6 +38,7 @@ const FLAG_ALIASES: Record<string, string> = {
 	"-v": "--version",
 	"-p": "--package",
 	"-i": "--important",
+	"-u": "--unreleased",
 };
 
 export function parseArgs(argv: string[]): ParsedArgs {
@@ -43,6 +48,8 @@ export function parseArgs(argv: string[]): ParsedArgs {
 		format: "text",
 		help: false,
 		version: false,
+		unreleased: false,
+		includePrerelease: false,
 	};
 
 	// Check for subcommands first
@@ -106,6 +113,10 @@ export function parseArgs(argv: string[]): ParsedArgs {
 					`Invalid filter: ${filterValue}. Use 'important', 'maintenance', or 'all'.`,
 				);
 			}
+		} else if (arg === "--unreleased") {
+			args.unreleased = true;
+		} else if (arg === "--include-prerelease") {
+			args.includePrerelease = true;
 		} else if (arg.startsWith("-")) {
 			throw new Error(`Unknown flag: ${arg}. Use --help for usage.`);
 		} else {
@@ -120,14 +131,17 @@ export function parseArgs(argv: string[]): ParsedArgs {
 }
 
 /**
- * Parse target string that may include version
+ * Parse target string that may include version or special keywords
  * Examples:
  *   "vercel/ai" -> { repo: "vercel/ai" }
  *   "vercel/ai@v4.0.0" -> { repo: "vercel/ai", version: "v4.0.0" }
+ *   "vercel/ai@HEAD" -> { repo: "vercel/ai", unreleased: true }
+ *   "vercel/ai@unreleased" -> { repo: "vercel/ai", unreleased: true }
  */
 export function parseTarget(target: string): {
 	repo: string;
 	version?: string;
+	unreleased?: boolean;
 } {
 	const atIndex = target.lastIndexOf("@");
 
@@ -136,13 +150,17 @@ export function parseTarget(target: string): {
 		return { repo: target };
 	}
 
-	// Check if after @ looks like a version (starts with v or digit)
 	const afterAt = target.slice(atIndex + 1);
+	const repo = target.slice(0, atIndex);
+
+	// Check for special unreleased keywords
+	if (afterAt === "HEAD" || afterAt === "unreleased") {
+		return { repo, unreleased: true };
+	}
+
+	// Check if after @ looks like a version (starts with v or digit)
 	if (/^v?\d/.test(afterAt)) {
-		return {
-			repo: target.slice(0, atIndex),
-			version: afterAt,
-		};
+		return { repo, version: afterAt };
 	}
 
 	// @ is part of the repo name (e.g., scoped package)

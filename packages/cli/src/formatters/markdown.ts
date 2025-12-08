@@ -70,7 +70,12 @@ export function formatMarkdown(
 
 	// Header
 	if ("version" in doc && doc.version) {
-		lines.push(`# ${doc.source.repo} ${doc.version}`);
+		// Handle unreleased version specially
+		if (doc.version === "unreleased") {
+			lines.push(`# ${doc.source.repo} (Unreleased)`);
+		} else {
+			lines.push(`# ${doc.source.repo} ${doc.version}`);
+		}
 	} else if ("releaseCount" in doc) {
 		const pkgInfo =
 			isAggregatedDocument(doc) && doc.packages.length > 1

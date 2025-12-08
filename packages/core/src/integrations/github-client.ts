@@ -700,4 +700,79 @@ export class GitHubClient {
 
 		return allReleases;
 	}
+
+	/**
+	 * Get the default branch name for a repository
+	 */
+	async getDefaultBranch(owner: string, repo: string): Promise<string> {
+		this.validateRepoParams(owner, repo);
+		const repoInfo = await this.fetch<{ default_branch: string }>(
+			`/repos/${owner}/${repo}`,
+		);
+		return repoInfo.default_branch;
+	}
+
+	/**
+	 * Compare a base ref (tag/commit) to HEAD (default branch)
+	 * Used for getting unreleased commits since last release
+	 */
+	async compareToHead(
+		owner: string,
+		repo: string,
+		base: string,
+	): Promise<GitHubComparison> {
+		this.validateRepoParams(owner, repo);
+		const defaultBranch = await this.getDefaultBranch(owner, repo);
+		return this.compare(owner, repo, base, defaultBranch);
+	}
+
+	/**
+	 * Check if a tag represents a pre-release version
+	 * Matches: rc, alpha, beta, canary, preview, dev, next, nightly
+	 */
+	private isPreReleaseTag(tag: string): boolean {
+		const preReleasePatterns = [
+			/-rc\./i,
+			/-rc\d/i,
+			/-alpha/i,
+			/-beta/i,
+			/-canary/i,
+			/-preview/i,
+			/-dev/i,
+			/-next/i,
+			/-nightly/i,
+		];
+		return preReleasePatterns.some((pattern) => pattern.test(tag));
+	}
+
+	/**
+	 * Get the latest stable release (non-draft, non-prerelease)
+	 * Returns null if no stable releases exist
+	 */
+	async getLatestStableRelease(
+		owner: string,
+		repo: string,
+		options?: { packageFilter?: string },
+	): Promise<GitHubRelease | null> {
+		this.validateRepoParams(owner, repo);
+		const releases = await this.getRecentReleases(owner, repo, {
+			perPage: 30,
+			packageFilter: options?.packageFilter,
+		});
+
+		// Find first non-prerelease, non-draft release
+		for (const release of releases) {
+			// Skip drafts (published_at is null for drafts)
+			if (!release.published_at) {
+				continue;
+			}
+			// Skip prereleases (both API flag and tag pattern)
+			if (release.prerelease || this.isPreReleaseTag(release.tag_name)) {
+				continue;
+			}
+			return release;
+		}
+
+		return null;
+	}
 }

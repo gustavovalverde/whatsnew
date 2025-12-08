@@ -155,6 +155,95 @@ export class CommitHistorySource implements DataSource {
 	}
 
 	/**
+	 * Fetch unreleased commits from the last release to HEAD (default branch)
+	 * Used for "what's new since last release" feature
+	 */
+	async fetchUnreleased(
+		owner: string,
+		repo: string,
+		options?: {
+			includePrerelease?: boolean;
+			packageFilter?: string;
+		},
+	): Promise<SourceResult | null> {
+		try {
+			// Find baseline: latest stable release (or any if includePrerelease)
+			const baselineRelease = options?.includePrerelease
+				? await this.github.getLatestReleaseOrNull(owner, repo)
+				: await this.github.getLatestStableRelease(owner, repo, {
+						packageFilter: options?.packageFilter,
+					});
+
+			let commits: GitHubCommit[];
+			let compareUrl: string | undefined;
+			let baseTag: string | undefined;
+
+			if (baselineRelease) {
+				// Compare from baseline tag to HEAD
+				baseTag = baselineRelease.tag_name;
+				const comparison = await this.github.compareToHead(
+					owner,
+					repo,
+					baseTag,
+				);
+				commits = comparison.commits;
+				compareUrl = comparison.html_url;
+			} else {
+				// No releases exist - get recent commits from default branch
+				const defaultBranch = await this.github.getDefaultBranch(owner, repo);
+				try {
+					// Try to get last 300 commits
+					const comparison = await this.github.compare(
+						owner,
+						repo,
+						`${defaultBranch}~300`,
+						defaultBranch,
+					);
+					commits = comparison.commits;
+					compareUrl = comparison.html_url;
+				} catch {
+					// Repo might have fewer than 300 commits, try smaller range
+					const comparison = await this.github.compare(
+						owner,
+						repo,
+						`${defaultBranch}~30`,
+						defaultBranch,
+					);
+					commits = comparison.commits;
+					compareUrl = comparison.html_url;
+				}
+			}
+
+			if (commits.length === 0) {
+				return null;
+			}
+
+			// Extract and categorize items using existing pipeline
+			const items = this.extractItems(commits);
+			const categories = categorizeItems(items);
+
+			// Calculate confidence
+			const hasConventionalCommits = commits.some((c) =>
+				CONVENTIONAL_COMMIT_PATTERN.test(c.commit.message.split("\n")[0]),
+			);
+
+			return {
+				categories,
+				confidence: hasConventionalCommits ? 0.75 : 0.6,
+				source: "commits.unreleased",
+				metadata: {
+					tag: baseTag,
+					version: "unreleased",
+					compareUrl,
+					commitCount: commits.length,
+				},
+			};
+		} catch (_error) {
+			return null;
+		}
+	}
+
+	/**
 	 * Extract items from commits for categorization
 	 * Delegates to the standalone function for reusability
 	 */

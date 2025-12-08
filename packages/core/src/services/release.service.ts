@@ -20,6 +20,7 @@ import {
 	GitHubClient,
 	type GitHubClientOptions,
 } from "../integrations/github-client.js";
+import { CommitHistorySource } from "../sources/commit-history.source.js";
 import { extractSummary } from "../utils/metadata.js";
 import {
 	buildAggregatedSummary,
@@ -44,6 +45,23 @@ export interface ReleaseServiceOptions extends GitHubClientOptions {
 	 * When provided with enabled: true, uses AI to improve low-quality parsing results
 	 */
 	ai?: Partial<AIConfig>;
+}
+
+/**
+ * Result from getUnreleasedChanges including document and metadata
+ */
+export interface UnreleasedResult {
+	/** The WNF document for unreleased changes */
+	document: WNFDocument;
+	/** Metadata about the unreleased state */
+	metadata: {
+		/** Tag of the baseline release (undefined if no releases) */
+		baselineTag?: string;
+		/** Number of commits since baseline */
+		commitCount: number;
+		/** Date of baseline release */
+		baselineDate?: string;
+	};
 }
 
 /**
@@ -320,6 +338,156 @@ export class ReleaseService {
 	 */
 	getGitHubClient(): GitHubClient {
 		return this.github;
+	}
+
+	/**
+	 * Fetches unreleased changes (commits since last release to HEAD)
+	 *
+	 * @param owner - GitHub repository owner
+	 * @param repo - GitHub repository name
+	 * @param options - Configuration options
+	 * @returns WNF document with unreleased changes and metadata
+	 */
+	async getUnreleasedChanges(
+		owner: string,
+		repo: string,
+		options?: {
+			includePrerelease?: boolean;
+			packageFilter?: string;
+		},
+	): Promise<UnreleasedResult> {
+		const commitSource = new CommitHistorySource({ github: this.github });
+
+		// Find baseline release
+		const baselineRelease = options?.includePrerelease
+			? await this.github.getLatestReleaseOrNull(owner, repo)
+			: await this.github.getLatestStableRelease(owner, repo, {
+					packageFilter: options?.packageFilter,
+				});
+
+		// Fetch unreleased commits
+		const result = await commitSource.fetchUnreleased(owner, repo, options);
+
+		if (!result) {
+			// No unreleased commits
+			return this.buildEmptyUnreleasedResult(owner, repo, baselineRelease);
+		}
+
+		const document: WNFDocument = {
+			spec: "wnf/0.1",
+			source: {
+				platform: "github",
+				repo: `${owner}/${repo}`,
+				tag: baselineRelease?.tag_name,
+			},
+			version: "unreleased",
+			releasedAt: undefined,
+			summary: this.buildUnreleasedSummary(
+				result.categories,
+				result.metadata?.commitCount ?? 0,
+			),
+			categories: result.categories,
+			links: {
+				compare: result.metadata?.compareUrl,
+			},
+			confidence: result.confidence,
+			generatedFrom: ["commits.unreleased"],
+			generatedAt: new Date().toISOString(),
+		};
+
+		return {
+			document,
+			metadata: {
+				baselineTag: baselineRelease?.tag_name,
+				commitCount: result.metadata?.commitCount ?? 0,
+				baselineDate: baselineRelease?.published_at ?? undefined,
+			},
+		};
+	}
+
+	/**
+	 * Get count of unreleased commits for smart hints
+	 * Efficient - only fetches comparison metadata, not full commit data
+	 *
+	 * @param owner - GitHub repository owner
+	 * @param repo - GitHub repository name
+	 * @param baseTag - Optional specific tag to compare against (defaults to latest stable)
+	 * @returns Number of commits since the baseline
+	 */
+	async getUnreleasedCommitCount(
+		owner: string,
+		repo: string,
+		baseTag?: string,
+	): Promise<number> {
+		try {
+			const tag =
+				baseTag ||
+				(await this.github.getLatestStableRelease(owner, repo))?.tag_name;
+
+			if (!tag) {
+				return 0; // No baseline to compare against
+			}
+
+			const comparison = await this.github.compareToHead(owner, repo, tag);
+			return comparison.total_commits;
+		} catch {
+			return 0; // Silently return 0 on error (hint is optional)
+		}
+	}
+
+	/**
+	 * Builds summary text for unreleased changes
+	 */
+	private buildUnreleasedSummary(
+		categories: WNFDocument["categories"],
+		commitCount: number,
+	): string {
+		const itemCount = categories.reduce((sum, c) => sum + c.items.length, 0);
+		const breakingCount =
+			categories.find((c) => c.id === "breaking")?.items.length ?? 0;
+
+		let summary = `${commitCount} commits with ${itemCount} changes since last release`;
+		if (breakingCount > 0) {
+			summary += ` (${breakingCount} breaking)`;
+		}
+		return summary;
+	}
+
+	/**
+	 * Builds empty result when no unreleased commits exist
+	 */
+	private buildEmptyUnreleasedResult(
+		owner: string,
+		repo: string,
+		baseline: Awaited<
+			ReturnType<typeof this.github.getLatestStableRelease>
+		> | null,
+	): UnreleasedResult {
+		return {
+			document: {
+				spec: "wnf/0.1",
+				source: {
+					platform: "github",
+					repo: `${owner}/${repo}`,
+					tag: baseline?.tag_name,
+				},
+				version: "unreleased",
+				releasedAt: undefined,
+				summary: baseline
+					? `No unreleased changes since ${baseline.tag_name}`
+					: "No releases found",
+				categories: [],
+				links: {},
+				confidence: 1.0,
+				generatedFrom: ["commits.unreleased"],
+				generatedAt: new Date().toISOString(),
+			},
+			metadata: {
+				baselineTag: baseline?.tag_name,
+				commitCount: 0,
+				baselineDate: baseline?.published_at ?? undefined,
+			},
+		};
 	}
 
 	/**

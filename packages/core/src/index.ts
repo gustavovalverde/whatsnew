@@ -38,6 +38,7 @@ export {
 export {
 	ReleaseService,
 	type ReleaseServiceOptions,
+	type UnreleasedResult,
 } from "./services/release.service.js";
 // Sources
 export {
