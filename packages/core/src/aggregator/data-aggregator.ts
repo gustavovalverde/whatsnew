@@ -147,6 +147,8 @@ export class DataAggregator {
 		sourcesUsed: string[],
 		aiEnhanced = false,
 	): WNFDocument {
+		// Use original tag from metadata (preserves v prefix), then fall back to parameter
+		const originalTag = result.metadata?.tag || tag;
 		const version =
 			result.metadata?.version || tag?.replace(/^v/, "") || "unknown";
 		const summary = buildCategorySummary(result.categories);
@@ -180,19 +182,24 @@ export class DataAggregator {
 			itemCount: confidenceResult.metrics.itemCount,
 		};
 
+		// Prefer GitHub's actual URL, fall back to constructed URL
+		const releaseUrl =
+			result.metadata?.releaseUrl ||
+			`https://github.com/${owner}/${repo}/releases/tag/${originalTag || version}`;
+
 		const doc: WNFDocument = {
 			spec: "wnf/0.1",
 			source: {
 				platform: "github",
 				repo: `${owner}/${repo}`,
-				tag: tag || version,
+				tag: originalTag || version,
 			},
 			version,
 			releasedAt: result.metadata?.date,
 			summary,
 			categories: result.categories,
 			links: {
-				release: `https://github.com/${owner}/${repo}/releases/tag/${tag || version}`,
+				release: releaseUrl,
 				compare: result.metadata?.compareUrl,
 			},
 			// Use composite confidence instead of format-only confidence

@@ -54,6 +54,8 @@ export class GitHubReleaseSource implements DataSource {
 					confidence: 0.3,
 					source: this.name,
 					metadata: {
+						tag: release.tag_name,
+						releaseUrl: release.html_url,
 						version: release.tag_name
 							.replace(/^v/, "")
 							.replace(/^@?[^@]+@/, ""),
@@ -71,6 +73,8 @@ export class GitHubReleaseSource implements DataSource {
 				confidence,
 				source: this.name,
 				metadata: {
+					tag: release.tag_name,
+					releaseUrl: release.html_url,
 					version: release.tag_name.replace(/^v/, "").replace(/^@?[^@]+@/, ""),
 					date: release.published_at,
 					rawContent: release.body,

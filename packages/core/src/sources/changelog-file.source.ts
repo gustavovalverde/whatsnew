@@ -67,6 +67,7 @@ export class ChangelogFileSource implements DataSource {
 				confidence: extracted.metadata.formatConfidence,
 				source: this.name,
 				metadata: {
+					tag,
 					version: targetVersion,
 					rawContent: changelog.content,
 				},

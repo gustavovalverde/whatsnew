@@ -424,6 +424,10 @@ export interface SourceResult {
 	confidenceBreakdown?: ConfidenceBreakdown;
 	source: string;
 	metadata?: {
+		/** Original tag from GitHub/GitLab (with v prefix if present) */
+		tag?: string;
+		/** Release URL from GitHub/GitLab API */
+		releaseUrl?: string;
 		version?: string;
 		date?: string;
 		compareUrl?: string;

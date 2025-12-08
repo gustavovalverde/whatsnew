@@ -143,6 +143,7 @@ export class CommitHistorySource implements DataSource {
 				confidence: hasConventionalCommits ? 0.75 : 0.6,
 				source: this.name,
 				metadata: {
+					tag: currentTag,
 					version: extractVersion(currentTag),
 					compareUrl,
 					commitCount: commits.length,
