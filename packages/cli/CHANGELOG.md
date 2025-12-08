@@ -1,5 +1,24 @@
 # @whatsnew/cli
 
+## 0.4.0
+
+### Minor Changes
+
+- 8373fe3: Add mathematical composite confidence scoring
+
+  - Add `calculateCompositeScore()` function with weighted quality dimensions
+  - Add `QualityDimensions` interface for structured quality assessment
+  - Add `terseRatio` tracking for short/ambiguous changelog entries
+  - Update confidence breakdown to include composite scoring in output
+
+### Patch Changes
+
+- Updated dependencies [8373fe3]
+- Updated dependencies [8373fe3]
+  - @whatsnew/types@0.4.0
+  - @whatsnew/core@0.4.0
+  - @whatsnew/parsers@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes
