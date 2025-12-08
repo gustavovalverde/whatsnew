@@ -1,11 +1,12 @@
 /**
  * Category inference functions
  *
- * Provides 4-tier category inference:
+ * Provides 5-tier category inference:
  * 0. Explicit breaking flag (absolute priority)
  * 1. Conventional commit type (high confidence)
- * 2. Keyword analysis (medium confidence)
- * 3. Source hint fallback (low confidence)
+ * 2. Explicit section hint (medium-high confidence) - section headers are explicit metadata
+ * 3. Keyword analysis (medium confidence) - implicit text signals
+ * 4. Fallback source hint (low confidence) - when no section header
  */
 
 import type {
@@ -68,13 +69,14 @@ export function mapConventionalCommitToCategory(type: string): CategoryId {
 }
 
 /**
- * Infers the category for a single extracted item using 4-tier analysis.
+ * Infers the category for a single extracted item using 5-tier analysis.
  *
  * Tier priority:
  * 0. Explicit breaking flag (absolute priority - from semver Major sections)
  * 1. Conventional commit type (high confidence)
- * 2. Keyword analysis (medium confidence)
- * 3. Source hint fallback (low confidence)
+ * 2. Explicit section hint (medium-high confidence) - section headers are explicit metadata
+ * 3. Keyword analysis (medium confidence) - implicit text signals
+ * 4. Fallback source hint (low confidence) - when no section header
  */
 export function inferItemCategory(item: ExtractedItem): CategorizationResult {
 	// Tier 0: Explicit breaking flag takes absolute priority
@@ -105,7 +107,22 @@ export function inferItemCategory(item: ExtractedItem): CategorizationResult {
 		};
 	}
 
-	// Tier 2: Keyword analysis (medium confidence)
+	// Tier 2: Explicit section hint (medium-high confidence)
+	// Section headers like "Documentation", "Bug Fixes" are explicit metadata
+	// that should take precedence over keyword analysis
+	if (item.sourceHint?.suggestedCategory && item.sourceHint?.section) {
+		const suggestedCategory = item.sourceHint.suggestedCategory;
+		// Only trust explicit section mappings (not "other" fallback)
+		if (suggestedCategory !== "other") {
+			return {
+				categoryId: suggestedCategory,
+				confidence: "medium",
+				reason: "section_hint",
+			};
+		}
+	}
+
+	// Tier 3: Keyword analysis (medium confidence)
 	const keywordResult = analyzeKeywords(item.text);
 	if (keywordResult.score >= KEYWORD_THRESHOLD) {
 		return {
@@ -115,7 +132,8 @@ export function inferItemCategory(item: ExtractedItem): CategorizationResult {
 		};
 	}
 
-	// Tier 3: Source hint fallback (lowest priority)
+	// Tier 4: Fallback source hint (low confidence)
+	// Used when no section header exists (e.g., inline hints, generic extractors)
 	if (item.sourceHint?.suggestedCategory) {
 		return {
 			categoryId: item.sourceHint.suggestedCategory,

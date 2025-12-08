@@ -651,6 +651,7 @@ export interface CategorizationResult {
 	reason:
 		| "explicit_breaking"
 		| "conventional_commit"
+		| "section_hint"
 		| "keyword_match"
 		| "source_hint"
 		| "no_signal";

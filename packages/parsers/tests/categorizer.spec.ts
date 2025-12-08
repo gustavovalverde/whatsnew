@@ -90,6 +90,58 @@ describe("inferItemCategory", () => {
 		expect(result.categoryId).toBe("breaking");
 		expect(result.reason).toBe("explicit_breaking");
 	});
+
+	describe("section hint vs keyword precedence", () => {
+		it("prefers explicit section hint over keyword", () => {
+			const result = inferItemCategory({
+				text: "fix Inertia adapter",
+				refs: [],
+				sourceHint: { section: "Documentation", suggestedCategory: "docs" },
+			});
+			expect(result.categoryId).toBe("docs");
+			expect(result.reason).toBe("section_hint");
+		});
+
+		it("uses keyword when section maps to other", () => {
+			const result = inferItemCategory({
+				text: "fix login bug",
+				refs: [],
+				sourceHint: { section: "Miscellaneous", suggestedCategory: "other" },
+			});
+			expect(result.categoryId).toBe("fixes");
+			expect(result.reason).toBe("keyword_match");
+		});
+
+		it("uses keyword when no section header exists", () => {
+			const result = inferItemCategory({
+				text: "fix login bug",
+				refs: [],
+				sourceHint: { suggestedCategory: "other" },
+			});
+			expect(result.categoryId).toBe("fixes");
+			expect(result.reason).toBe("keyword_match");
+		});
+
+		it("prefers Features section over fix keyword", () => {
+			const result = inferItemCategory({
+				text: "fix several issues with streaming",
+				refs: [],
+				sourceHint: { section: "New Features", suggestedCategory: "features" },
+			});
+			expect(result.categoryId).toBe("features");
+			expect(result.reason).toBe("section_hint");
+		});
+
+		it("still uses conventional commit over section hint", () => {
+			const result = inferItemCategory({
+				text: "fix(core): update configuration",
+				refs: [],
+				sourceHint: { section: "Documentation", suggestedCategory: "docs" },
+			});
+			expect(result.categoryId).toBe("fixes");
+			expect(result.reason).toBe("conventional_commit");
+		});
+	});
 });
 
 describe("categorizeItems", () => {

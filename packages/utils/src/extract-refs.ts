@@ -107,10 +107,14 @@ export function extractRefs(text: string): string[] {
 }
 
 /**
- * Strips trailing PR/issue references from text
+ * Strips PR/issue reference links from text
  *
- * Removes patterns like "(#123)", "(#123, #456)", or markdown links "[#123](url)"
- * from the end of text. Handles multiple consecutive trailing refs like "(#123) (#456)".
+ * Removes:
+ * - Inline markdown ref links `[#123](url)` anywhere in text
+ * - Malformed double-bracket links `[[#123](url)`
+ * - Trailing patterns like "(#123)", "(#123, #456)", "([#123](url))"
+ * - Cleanup of empty parentheses and connectors after stripping
+ *
  * This is used to clean text when refs are extracted to a separate field.
  *
  * @example
@@ -118,34 +122,40 @@ export function extractRefs(text: string): string[] {
  * stripTrailingRefs("Add OAuth support (#123)");
  * // Returns: "Add OAuth support"
  *
- * stripTrailingRefs("Fix bug (#123, #456)");
- * // Returns: "Fix bug"
+ * stripTrailingRefs("Fixed ([#10135](url) and [#10115](url))");
+ * // Returns: "Fixed"
  *
- * stripTrailingRefs("Fix bug (#123) (#456)");
- * // Returns: "Fix bug"
- *
- * stripTrailingRefs("Update docs ([#789](https://github.com/...))");
- * // Returns: "Update docs"
- *
- * stripTrailingRefs("See #123 for details");
- * // Returns: "See #123 for details" (not trailing, unchanged)
+ * stripTrailingRefs("See [docs](url) for details");
+ * // Returns: "See [docs](url) for details" (non-ref links preserved)
  * ```
  */
 export function stripTrailingRefs(text: string): string {
 	let result = text;
 	let previousResult = "";
 
-	// Loop until no more trailing refs are found
+	// Loop until no more changes
 	while (result !== previousResult) {
 		previousResult = result;
 		result = result
+			// Strip malformed double-bracket links [[#123](url) FIRST (before single-bracket)
+			.replace(/\[\[#\d+\]\([^)]+\)/g, "")
+			// Strip inline markdown ref links [#123](url) anywhere
+			.replace(/\[#\d+\]\([^)]+\)/g, "")
 			// Match trailing markdown link: ([#123](url)) or [#123](url)
 			.replace(/\s*\(\[#\d+\]\([^)]+\)\)\s*$/, "")
 			.replace(/\s*\[#\d+\]\([^)]+\)\s*$/, "")
 			// Match trailing patterns like (#123) or (#123, #456) or (fixes #123)
-			.replace(/\s*\((?:fixes\s+)?#\d+(?:\s*,\s*#\d+)*\)\s*$/, "")
+			.replace(
+				/\s*\((?:closes?|fixes?|resolves?)?\s*#\d+(?:\s*,\s*#\d+)*\)\s*$/i,
+				"",
+			)
+			// Clean up parenthetical connectors that are now empty: (and ) or ( and ) or (, )
+			.replace(/\s*\(\s*(?:and|,|\s)+\s*\)\s*/g, "")
+			// Clean up empty parentheses
+			.replace(/\s*\(\s*\)\s*/g, "")
 			.trim();
 	}
 
-	return result;
+	// Clean up multiple spaces
+	return result.replace(/\s+/g, " ").trim();
 }

@@ -560,4 +560,79 @@ describe("CLI Integration (with network)", () => {
 			}
 		},
 	);
+
+	describe("categorization correctness", () => {
+		it(
+			"47ng/nuqs: section hint takes precedence over keyword",
+			{ timeout: 60000 },
+			() => {
+				// This test validates that items in explicit section headers
+				// are categorized by section, not by keywords in the text.
+				// e.g., "fix Inertia adapter" in "Documentation" section -> docs, not fixes
+				const result = runCLI(["47ng/nuqs", "--format", "json"], {
+					timeout: 30000,
+				});
+
+				if (!result.success) {
+					console.warn(`Skipping: ${result.stderr || "no releases"}`);
+					return;
+				}
+
+				const data = JSON.parse(result.stdout);
+				const docs = data.categories?.find(
+					(c: { id: string }) => c.id === "docs",
+				);
+				const fixes = data.categories?.find(
+					(c: { id: string }) => c.id === "fixes",
+				);
+
+				// "fix Inertia adapter" should be in docs (from Documentation section),
+				// not in fixes (despite containing "fix" keyword)
+				const inertiaInDocs = docs?.items?.find((i: { text: string }) =>
+					i.text.includes("Inertia adapter"),
+				);
+				const inertiaInFixes = fixes?.items?.find((i: { text: string }) =>
+					i.text.includes("Inertia adapter"),
+				);
+
+				expect(
+					inertiaInDocs,
+					"'fix Inertia adapter' should be in docs category",
+				).toBeDefined();
+				expect(
+					inertiaInFixes,
+					"'fix Inertia adapter' should NOT be in fixes category",
+				).toBeUndefined();
+			},
+		);
+
+		it(
+			"zcashfoundation/zebra: strips inline markdown ref links from text",
+			{ timeout: 60000 },
+			() => {
+				// This test validates that inline markdown ref links like [#123](url)
+				// are stripped from text when refs are extracted.
+				// e.g., "Fixed logging ([#10135](url) and [#10115](url))" -> "Fixed logging"
+				const result = runCLI(["zcashfoundation/zebra", "--format", "json"], {
+					timeout: 30000,
+				});
+
+				if (!result.success) {
+					console.warn(`Skipping: ${result.stderr || "no releases"}`);
+					return;
+				}
+
+				const data = JSON.parse(result.stdout);
+				for (const category of data.categories || []) {
+					for (const item of category.items || []) {
+						// Text should not contain markdown ref link syntax [#123](url)
+						expect(
+							item.text,
+							`Text should not contain markdown ref links: "${item.text}"`,
+						).not.toMatch(/\[#\d+\]\([^)]+\)/);
+					}
+				}
+			},
+		);
+	});
 });

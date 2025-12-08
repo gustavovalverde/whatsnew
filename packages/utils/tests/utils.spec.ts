@@ -233,6 +233,44 @@ describe("stripTrailingRefs", () => {
 			),
 		).toBe("Update feature");
 	});
+
+	describe("inline markdown ref links", () => {
+		it("strips inline markdown ref links", () => {
+			expect(
+				stripTrailingRefs(
+					"Fixed logging ([#10135](https://github.com/org/repo/pull/10135) and [#10115](https://github.com/org/repo/pull/10115))",
+				),
+			).toBe("Fixed logging");
+		});
+
+		it("handles malformed double-bracket links", () => {
+			expect(
+				stripTrailingRefs("Fixed IDs ([#10135](url) and [[#10115](url))"),
+			).toBe("Fixed IDs");
+		});
+
+		it("preserves non-ref markdown links", () => {
+			expect(
+				stripTrailingRefs("See [docs](https://example.com) for details"),
+			).toBe("See [docs](https://example.com) for details");
+		});
+
+		it("handles mixed inline and trailing refs", () => {
+			expect(stripTrailingRefs("Fixed [#123](url) issue (#456)")).toBe(
+				"Fixed issue",
+			);
+		});
+
+		it("cleans up empty parentheses after stripping", () => {
+			expect(stripTrailingRefs("Update ([#123](url))")).toBe("Update");
+		});
+
+		it("cleans up parenthetical connectors", () => {
+			expect(stripTrailingRefs("Fix ( [#123](url) and [#456](url) )")).toBe(
+				"Fix",
+			);
+		});
+	});
 });
 
 describe("extractVersion", () => {
