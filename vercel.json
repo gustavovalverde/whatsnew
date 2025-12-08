@@ -1,0 +1,19 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"builds": [
+		{
+			"src": "apps/web/package.json",
+			"use": "@vercel/next",
+			"config": {
+				"installCommand": "cd ../.. && bun install",
+				"buildCommand": "cd ../.. && bun run --filter @whatsnew/types build && bun run --filter @whatsnew/utils build && bun run --filter @whatsnew/parsers build && bun run --filter @whatsnew/core build && cd apps/web && bun run build"
+			}
+		}
+	],
+	"routes": [
+		{
+			"src": "/(.*)",
+			"dest": "apps/web/$1"
+		}
+	]
+}

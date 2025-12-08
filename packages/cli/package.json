@@ -51,14 +51,15 @@
 	],
 	"dependencies": {
 		"@whatsnew/core": "workspace:*",
+		"@whatsnew/parsers": "workspace:*",
 		"@whatsnew/types": "workspace:*",
 		"date-fns": "^4.1.0"
 	},
 	"devDependencies": {
-		"@types/node": "catalog:",
+		"@types/node": "^24.10.1",
 		"@vitest/coverage-v8": "^4.0.15",
-		"typescript": "catalog:",
-		"vitest": "catalog:"
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.15"
 	},
 	"engines": {
 		"node": ">=24"

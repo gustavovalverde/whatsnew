@@ -43,13 +43,13 @@
 		"zod"
 	],
 	"dependencies": {
-		"zod": "catalog:"
+		"zod": "^4.1.13"
 	},
 	"devDependencies": {
-		"@types/node": "catalog:",
-		"@vitest/coverage-v8": "catalog:",
-		"typescript": "catalog:",
-		"vitest": "catalog:"
+		"@types/node": "^24.10.1",
+		"@vitest/coverage-v8": "^4.0.15",
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.15"
 	},
 	"engines": {
 		"node": ">=24"

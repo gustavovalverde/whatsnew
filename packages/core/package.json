@@ -42,17 +42,17 @@
 	],
 	"dependencies": {
 		"@ai-sdk/anthropic": "^2.0.53",
-		"@ai-sdk/openai": "^2.0.77",
+		"@ai-sdk/openai": "^2.0.80",
 		"@whatsnew/parsers": "workspace:*",
 		"@whatsnew/types": "workspace:*",
 		"@whatsnew/utils": "workspace:*",
-		"ai": "^5.0.106",
-		"zod": "catalog:"
+		"ai": "^5.0.108",
+		"zod": "^4.1.13"
 	},
 	"devDependencies": {
-		"@types/node": "catalog:",
-		"typescript": "catalog:",
-		"vitest": "catalog:"
+		"@types/node": "^24.10.1",
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.15"
 	},
 	"engines": {
 		"node": ">=24"

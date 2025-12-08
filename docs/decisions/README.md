@@ -20,6 +20,7 @@ Use the next available number in sequence.
 |-----|--------|-------|
 | [001](./001-input-quality-limitations.md) | proposed | Input Quality Limitations and Mitigation Strategies |
 | [002](./002-version-tag-commit-filtering.md) | proposed | Filter Version Tag Commits from Commit History |
+| [003](./003-dynamic-open-graph-metadata.md) | proposed | Dynamic Open Graph Metadata for Shareable URLs |
 
 ## Issue Categories
 
@@ -34,3 +35,9 @@ Use the next available number in sequence.
 - **Root cause**: Release automation creates version-only commits
 - **Impact**: Output pollution with "v1.2.3" entries, inflated terse ratio
 - **Solution**: Filter version patterns at fetch time
+
+### Dynamic Open Graph Metadata (ADR-003)
+- **Affected feature**: Social sharing of generated changelog URLs
+- **Root cause**: Static OG metadata doesn't reflect URL query params
+- **Impact**: Shared links show generic "What's New" instead of repo-specific preview
+- **Solution**: Use `generateMetadata()` to create repo-specific title/description from URL params

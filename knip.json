@@ -1,0 +1,46 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"ignoreExportsUsedInFile": {
+		"interface": true,
+		"type": true
+	},
+	"tags": ["-lintignore"],
+	"workspaces": {
+		".": {
+			"entry": ["scripts/**/*.ts"],
+			"project": ["scripts/**/*.ts"],
+			"ignoreDependencies": ["bun-osv-scanner", "esbuild"]
+		},
+		"packages/types": {
+			"entry": ["src/index.ts"],
+			"project": ["src/**/*.ts", "tests/**/*.ts"]
+		},
+		"packages/utils": {
+			"entry": ["src/index.ts"],
+			"project": ["src/**/*.ts", "tests/**/*.ts"]
+		},
+		"packages/parsers": {
+			"entry": ["src/index.ts", "tests/integration/validate-repositories.ts"],
+			"project": ["src/**/*.ts", "tests/**/*.ts"]
+		},
+		"packages/core": {
+			"entry": ["src/index.ts"],
+			"project": ["src/**/*.ts", "tests/**/*.ts"]
+		},
+		"packages/cli": {
+			"entry": ["src/index.ts", "bin/whatsnew.ts"],
+			"project": ["src/**/*.ts", "bin/**/*.ts", "tests/**/*.ts"]
+		},
+		"packages/api": {
+			"entry": ["src/index.ts"],
+			"project": ["src/**/*.ts", "tests/**/*.ts"]
+		},
+		"apps/web": {
+			"entry": ["src/app/**/*.{ts,tsx}"],
+			"project": ["src/**/*.{ts,tsx}"],
+			"ignoreDependencies": ["tailwindcss", "tw-animate-css"]
+		}
+	},
+	"ignore": ["**/dist/**"],
+	"ignoreDependencies": ["vite"]
+}

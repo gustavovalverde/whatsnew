@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.0/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
@@ -8,12 +8,18 @@
 	"files": {
 		"ignoreUnknown": false,
 		"includes": [
-			"**/src/**/*",
+			"**/src/**/*.ts",
+			"**/src/**/*.tsx",
+			"**/src/**/*.js",
+			"**/src/**/*.jsx",
+			"**/src/**/*.css",
 			"**/tests/**/*",
 			"**/*.config.ts",
 			"**/*.config.js",
+			"**/*.config.mjs",
 			"**/*.md",
 			"packages/**/package.json",
+			"apps/**/package.json",
 			"package.json",
 			"biome.json",
 			"tsconfig*.json"
@@ -75,6 +81,20 @@
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
+		}
+	},
+	"css": {
+		"parser": {
+			"cssModules": true,
+			"tailwindDirectives": true
+		},
+		"linter": {
+			"enabled": true
+		},
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "space",
+			"indentWidth": 2
 		}
 	},
 	"assist": {
@@ -141,6 +161,44 @@
 				"rules": {
 					"suspicious": {
 						"noConsole": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"apps/**/src/app/**/page.tsx",
+				"apps/**/src/app/**/layout.tsx",
+				"apps/**/src/app/**/loading.tsx",
+				"apps/**/src/app/**/error.tsx",
+				"apps/**/src/app/**/not-found.tsx",
+				"apps/**/src/app/**/template.tsx",
+				"apps/**/src/app/**/default.tsx",
+				"apps/**/src/app/global-error.tsx",
+				"apps/**/next.config.ts"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"noDefaultExport": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["apps/**/src/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off",
+						"noArrayIndexKey": "warn"
+					},
+					"correctness": {
+						"useExhaustiveDependencies": "warn",
+						"useHookAtTopLevel": "error"
+					},
+					"a11y": {
+						"useSemanticElements": "warn"
 					}
 				}
 			}

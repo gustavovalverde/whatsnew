@@ -1,4 +1,4 @@
-import { extractConventionalCommitType, inferCategory } from "../packages/parsers/src/category-inferrer.js";
+import { extractConventionalCommitType, inferCategory } from "../packages/parsers/src/categorizer/inference.js";
 
 const testTexts = [
   "[#15865](https://github.com/nestjs/nest/pull/15865) fix(core): make get() throw for implicitly request-scoped trees",
