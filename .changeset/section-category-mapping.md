@@ -1,14 +1,20 @@
 ---
 "@whatsnew/parsers": patch
 "@whatsnew/utils": patch
+"@whatsnew/types": patch
+"@whatsnew/core": patch
 ---
 
-Improve section-based categorization for generic format
+Fix section-based categorization and tag preservation
 
-- Add shared `SECTION_TO_CATEGORY_MAP` with 30+ section name variations
-- Add `mapSectionToCategory()` helper for consistent section→category mapping
-- Update generic extractor to use section mapping instead of hardcoded "other"
-- Update github-auto extractor to use shared mapping (removes duplication)
-- Improve `normalizeForDeduplication()` to strip `#1234-` prefixes, author attributions, and `(closes #1234)` patterns
+**Categorization improvements:**
+- Add section_hint tier that takes precedence over keyword matching
+- Fix items in "Documentation" sections being miscategorized as "fixes"
+- Enhanced `stripTrailingRefs()` to remove inline markdown ref links
 
-Fixes issues with repos like 47ng/nuqs where items in "Bug fixes" sections were incorrectly categorized as "other".
+**Tag and URL fixes:**
+- Preserve original tag from GitHub API (e.g., `v3.1.0` instead of `3.1.0`)
+- Use GitHub's actual release URL instead of constructing it
+- Fixes display and link issues for repos with non-standard tag formats
+
+Tested against 47ng/nuqs and zcashfoundation/zebra.
