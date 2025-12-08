@@ -38,13 +38,13 @@ export const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
  */
 export function tryCatch<T, E = Error>(
 	fn: () => T,
-	mapError?: (e: unknown) => E,
+	errorMapper?: (e: unknown) => E,
 ): Result<T, E> {
 	try {
 		return ok(fn());
 	} catch (e) {
-		if (mapError) {
-			return err(mapError(e));
+		if (errorMapper) {
+			return err(errorMapper(e));
 		}
 		return err(e as E);
 	}
@@ -55,13 +55,13 @@ export function tryCatch<T, E = Error>(
  */
 export async function tryCatchAsync<T, E = Error>(
 	fn: () => Promise<T>,
-	mapError?: (e: unknown) => E,
+	errorMapper?: (e: unknown) => E,
 ): Promise<Result<T, E>> {
 	try {
 		return ok(await fn());
 	} catch (e) {
-		if (mapError) {
-			return err(mapError(e));
+		if (errorMapper) {
+			return err(errorMapper(e));
 		}
 		return err(e as E);
 	}

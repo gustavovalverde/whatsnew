@@ -206,7 +206,7 @@ function printSummary(summary: Summary): void {
 }
 
 // Run tests
-const limit = process.argv[2]
+const repoLimit = process.argv[2]
 	? Number.parseInt(process.argv[2], 10)
 	: undefined;
-runTests(limit).catch(console.error);
+runTests(repoLimit).catch(console.error);
