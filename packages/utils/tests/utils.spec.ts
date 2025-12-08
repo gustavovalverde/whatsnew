@@ -155,6 +155,46 @@ describe("extractGitHubRefs", () => {
 	it("avoids duplicates", () => {
 		expect(extractGitHubRefs("#123 and [#123](url)")).toEqual(["123"]);
 	});
+
+	describe("commit SHA links", () => {
+		it("extracts commit SHA from markdown link with /commit/ URL", () => {
+			expect(
+				extractGitHubRefs(
+					"Fix([d072a85](https://github.com/47ng/nuqs/commit/d072a85e5c76c8a316f20b21658bf846e0dcce72))",
+				),
+			).toEqual(["d072a85"]);
+		});
+
+		it("extracts full 40-char SHA from commit link", () => {
+			expect(
+				extractGitHubRefs(
+					"Fixed([d072a85e5c76c8a316f20b21658bf846e0dcce72](https://github.com/org/repo/commit/d072a85e5c76c8a316f20b21658bf846e0dcce72))",
+				),
+			).toEqual(["d072a85e5c76c8a316f20b21658bf846e0dcce72"]);
+		});
+
+		it("extracts both PR ref and commit SHA", () => {
+			const refs = extractGitHubRefs(
+				"#1197 - TypeError in serializer([d072a85](https://github.com/org/repo/commit/d072a85))",
+			);
+			expect(refs).toContain("1197");
+			expect(refs).toContain("d072a85");
+		});
+
+		it("ignores non-commit markdown links", () => {
+			expect(
+				extractGitHubRefs("See [docs](https://example.com/d072a85)"),
+			).toEqual([]);
+		});
+
+		it("handles case-insensitive SHA", () => {
+			expect(
+				extractGitHubRefs(
+					"Fix([D072A85](https://github.com/org/repo/commit/D072A85))",
+				),
+			).toEqual(["D072A85"]);
+		});
+	});
 });
 
 describe("extractGitLabRefs", () => {
@@ -269,6 +309,62 @@ describe("stripTrailingRefs", () => {
 			expect(stripTrailingRefs("Fix ( [#123](url) and [#456](url) )")).toBe(
 				"Fix",
 			);
+		});
+	});
+
+	describe("commit SHA links", () => {
+		it("strips inline commit SHA link with /commit/ URL", () => {
+			expect(
+				stripTrailingRefs(
+					"TypeError in serializer for array with default value([d072a85](https://github.com/47ng/nuqs/commit/d072a85e5c76c8a316f20b21658bf846e0dcce72))",
+				),
+			).toBe("TypeError in serializer for array with default value");
+		});
+
+		it("strips trailing commit SHA link", () => {
+			expect(
+				stripTrailingRefs(
+					"Fix bug [d072a85](https://github.com/org/repo/commit/d072a85)",
+				),
+			).toBe("Fix bug");
+		});
+
+		it("strips trailing commit SHA wrapped in parens", () => {
+			expect(
+				stripTrailingRefs(
+					"Fix bug ([d072a85](https://github.com/org/repo/commit/d072a85))",
+				),
+			).toBe("Fix bug");
+		});
+
+		it("strips full 40-char SHA commit link", () => {
+			expect(
+				stripTrailingRefs(
+					"Update([d072a85e5c76c8a316f20b21658bf846e0dcce72](https://github.com/org/repo/commit/d072a85e5c76c8a316f20b21658bf846e0dcce72))",
+				),
+			).toBe("Update");
+		});
+
+		it("preserves non-commit markdown links with hex-like text", () => {
+			expect(stripTrailingRefs("See [abc1234](https://example.com/docs)")).toBe(
+				"See [abc1234](https://example.com/docs)",
+			);
+		});
+
+		it("strips mixed PR and commit refs", () => {
+			expect(
+				stripTrailingRefs(
+					"Fix [#1197](url)([d072a85](https://github.com/org/repo/commit/d072a85))",
+				),
+			).toBe("Fix");
+		});
+
+		it("handles uppercase SHA", () => {
+			expect(
+				stripTrailingRefs(
+					"Fix([D072A85](https://github.com/org/repo/commit/D072A85))",
+				),
+			).toBe("Fix");
 		});
 	});
 });

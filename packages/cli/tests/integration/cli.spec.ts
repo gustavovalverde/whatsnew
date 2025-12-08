@@ -526,8 +526,27 @@ describe("CLI Integration (with network)", () => {
 							trailingLinkRef.test(item.text),
 							`${repo}: text "${item.text}" should not have trailing [#${ref}](url)`,
 						).toBe(false);
+
+						// Check for trailing commit SHA links (7-40 hex chars with /commit/ in URL)
+						if (/^[a-f0-9]{7,40}$/i.test(ref)) {
+							const trailingCommitLink = new RegExp(
+								`\\[${ref}\\]\\([^)]*\\/commit\\/[^)]+\\)\\s*$`,
+								"i",
+							);
+							expect(
+								trailingCommitLink.test(item.text),
+								`${repo}: text "${item.text}" should not have trailing commit link [${ref}](url)`,
+							).toBe(false);
+						}
 					}
 				}
+
+				// Text should not contain inline commit SHA links
+				const inlineCommitLink = /\[[a-f0-9]{7,40}\]\([^)]*\/commit\/[^)]+\)/i;
+				expect(
+					inlineCommitLink.test(item.text),
+					`${repo}: text "${item.text}" should not contain inline commit SHA links`,
+				).toBe(false);
 			}
 
 			for (const repo of popularRepos) {
@@ -630,6 +649,37 @@ describe("CLI Integration (with network)", () => {
 							item.text,
 							`Text should not contain markdown ref links: "${item.text}"`,
 						).not.toMatch(/\[#\d+\]\([^)]+\)/);
+					}
+				}
+			},
+		);
+
+		it(
+			"47ng/nuqs: strips commit SHA links from text",
+			{ timeout: 60000 },
+			() => {
+				// This test validates that commit SHA markdown links are stripped.
+				// e.g., "TypeError in serializer([d072a85](https://github.com/.../commit/...))"
+				// should become "TypeError in serializer" with d072a85 in refs
+				const result = runCLI(["47ng/nuqs", "--format", "json"], {
+					timeout: 30000,
+				});
+
+				if (!result.success) {
+					console.warn(`Skipping: ${result.stderr || "no releases"}`);
+					return;
+				}
+
+				const data = JSON.parse(result.stdout);
+				for (const category of data.categories || []) {
+					for (const item of category.items || []) {
+						// Text should not contain commit SHA link syntax [sha](commit-url)
+						const commitLinkPattern =
+							/\[[a-f0-9]{7,40}\]\([^)]*\/commit\/[^)]+\)/i;
+						expect(
+							item.text,
+							`Text should not contain commit SHA links: "${item.text}"`,
+						).not.toMatch(commitLinkPattern);
 					}
 				}
 			},

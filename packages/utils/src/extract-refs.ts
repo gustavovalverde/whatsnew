@@ -5,17 +5,21 @@
  */
 
 /**
- * Extracts GitHub-style PR/issue references from text
+ * Extracts GitHub-style PR/issue references and commit SHAs from text
  *
  * Matches:
  * - `#123` - hash reference
  * - `[#123](url)` - markdown link with hash
  * - `GH-123` - GitHub prefix style
+ * - `[d072a85](commit-url)` - commit SHA link (7-40 hex chars with /commit/ in URL)
  *
  * @example
  * ```typescript
  * extractGitHubRefs("Fixed bug #123 and #456");
  * // Returns: ["123", "456"]
+ *
+ * extractGitHubRefs("Fix([d072a85](https://github.com/org/repo/commit/d072a85))");
+ * // Returns: ["d072a85"]
  * ```
  */
 export function extractGitHubRefs(text: string): string[] {
@@ -49,6 +53,12 @@ export function extractGitHubRefs(text: string): string[] {
 				refs.add(num);
 			}
 		}
+	}
+
+	// Match commit SHA links [sha](commit-url) - 7-40 hex chars with /commit/ in URL
+	const commitLinkPattern = /\[([a-f0-9]{7,40})\]\([^)]*\/commit\/[^)]+\)/gi;
+	for (const match of text.matchAll(commitLinkPattern)) {
+		refs.add(match[1]);
 	}
 
 	return [...refs];
@@ -107,11 +117,12 @@ export function extractRefs(text: string): string[] {
 }
 
 /**
- * Strips PR/issue reference links from text
+ * Strips PR/issue reference links and commit SHA links from text
  *
  * Removes:
  * - Inline markdown ref links `[#123](url)` anywhere in text
  * - Malformed double-bracket links `[[#123](url)`
+ * - Commit SHA links `[d072a85](commit-url)` where URL contains `/commit/`
  * - Trailing patterns like "(#123)", "(#123, #456)", "([#123](url))"
  * - Cleanup of empty parentheses and connectors after stripping
  *
@@ -124,6 +135,9 @@ export function extractRefs(text: string): string[] {
  *
  * stripTrailingRefs("Fixed ([#10135](url) and [#10115](url))");
  * // Returns: "Fixed"
+ *
+ * stripTrailingRefs("Fix bug([d072a85](https://github.com/org/repo/commit/d072a85))");
+ * // Returns: "Fix bug"
  *
  * stripTrailingRefs("See [docs](url) for details");
  * // Returns: "See [docs](url) for details" (non-ref links preserved)
@@ -141,9 +155,14 @@ export function stripTrailingRefs(text: string): string {
 			.replace(/\[\[#\d+\]\([^)]+\)/g, "")
 			// Strip inline markdown ref links [#123](url) anywhere
 			.replace(/\[#\d+\]\([^)]+\)/g, "")
+			// Strip commit SHA links [sha](commit-url) - hex SHA 7-40 chars with /commit/ in URL
+			.replace(/\[[a-f0-9]{7,40}\]\([^)]*\/commit\/[^)]+\)/gi, "")
 			// Match trailing markdown link: ([#123](url)) or [#123](url)
 			.replace(/\s*\(\[#\d+\]\([^)]+\)\)\s*$/, "")
 			.replace(/\s*\[#\d+\]\([^)]+\)\s*$/, "")
+			// Match trailing commit SHA links: ([sha](commit-url)) or [sha](commit-url)
+			.replace(/\s*\(\[[a-f0-9]{7,40}\]\([^)]*\/commit\/[^)]+\)\)\s*$/i, "")
+			.replace(/\s*\[[a-f0-9]{7,40}\]\([^)]*\/commit\/[^)]+\)\s*$/i, "")
 			// Match trailing patterns like (#123) or (#123, #456) or (fixes #123)
 			.replace(
 				/\s*\((?:closes?|fixes?|resolves?)?\s*#\d+(?:\s*,\s*#\d+)*\)\s*$/i,
